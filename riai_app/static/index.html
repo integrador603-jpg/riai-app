@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor RIAI - CNH Industrial</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;min-height:100vh}
+  .topbar{background:#c8102e;color:#fff;padding:12px 24px;display:flex;align-items:center;gap:16px}
+  .topbar h1{font-size:18px;font-weight:700;letter-spacing:1px}
+  .topbar span{font-size:12px;opacity:.8}
+  .nav{background:#fff;border-bottom:2px solid #e0e0e0;display:flex;gap:0}
+  .nav button{padding:12px 28px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:600;color:#555;border-bottom:3px solid transparent;transition:all .2s}
+  .nav button.active{color:#c8102e;border-bottom-color:#c8102e}
+  .nav button:hover{background:#fef0f0}
+  .page{display:none;padding:24px;max-width:1100px;margin:0 auto}
+  .page.active{display:block}
+  .card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;margin-bottom:20px}
+  .card h2{font-size:15px;font-weight:700;color:#c8102e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #eee}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .span2{grid-column:span 2}
+  .span3{grid-column:span 3}
+  label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:4px}
+  input,select,textarea{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:5px;font-size:13px;background:#fff;transition:border .2s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#c8102e}
+  input[readonly]{background:#f5f5f5;color:#666}
+  .auto-tag{font-size:10px;color:#888;margin-top:2px}
+  .btn{padding:9px 20px;border:none;border-radius:5px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+  .btn-primary{background:#c8102e;color:#fff}
+  .btn-primary:hover{background:#a00d25}
+  .btn-secondary{background:#eee;color:#333}
+  .btn-secondary:hover{background:#ddd}
+  .btn-success{background:#27ae60;color:#fff}
+  .btn-success:hover{background:#1e8449}
+  .btn-danger{background:#e74c3c;color:#fff}
+  .btn-danger:hover{background:#c0392b}
+  .btn-sm{padding:5px 12px;font-size:12px}
+  .toggle-group{display:flex;gap:10px;margin-bottom:8px}
+  .toggle-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;font-size:13px}
+  .toggle-group input[type=radio]{width:auto}
+  .search-bar{display:flex;gap:10px;margin-bottom:12px}
+  .search-bar input{flex:1}
+  .results-table{width:100%;border-collapse:collapse;font-size:13px}
+  .results-table th{background:#c8102e;color:#fff;padding:10px 12px;text-align:left}
+  .results-table td{padding:10px 12px;border-bottom:1px solid #eee}
+  .results-table tr:hover td{background:#fef0f0}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+  .badge-ok{background:#d4edda;color:#155724}
+  .badge-draft{background:#fff3cd;color:#856404}
+  .img-upload-area{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+  .img-upload-area:hover{border-color:#c8102e}
+  .img-preview{width:100%;max-height:110px;object-fit:contain;margin-top:6px;border-radius:4px}
+  .img-label{font-size:11px;color:#888}
+  .riai-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+  .riai-table td{border:1px solid #999;padding:5px 8px;font-size:11px;vertical-align:top}
+  .riai-section-title{background:#c8102e;color:#fff;padding:5px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+  .riai-subsection{background:#e8e8e8;padding:4px 8px;font-size:9px;font-weight:700;text-transform:uppercase}
+  .riai-field-label{font-size:8px;color:#666;display:block}
+  .riai-field-val{font-size:11px;font-weight:700;display:block}
+  .img-box{border:1px solid #ccc;border-radius:4px;min-height:70px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;padding:4px}
+  .img-box img{max-width:100%;max-height:70px;object-fit:contain}
+  .approval-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:10px 0;border-bottom:1px solid #eee}
+  .approval-row:last-child{border:none}
+  .flex-end{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+  .conditional-section{padding:16px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;margin-top:12px}
+  .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:6px;color:#fff;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s}
+  .toast.show{opacity:1}
+  .toast-ok{background:#27ae60}
+  .toast-err{background:#e74c3c}
+  .autocomplete-wrap{position:relative}
+  .autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;border-top:none;border-radius:0 0 5px 5px;max-height:180px;overflow-y:auto;z-index:100;display:none}
+  .autocomplete-list div{padding:8px 10px;cursor:pointer;font-size:13px}
+  .autocomplete-list div:hover{background:#fef0f0}
+  @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.span2,.span3{grid-column:span 1}}
+  @media print{
+    body *{visibility:hidden}
+    #preview-modal,#preview-modal *{visibility:visible}
+    #preview-modal{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;background:#fff;display:block!important}
+    #preview-modal>div{box-shadow:none;max-width:100%;padding:0;margin:0}
+    #preview-modal h3,#preview-modal .btn{display:none!important}
+    .riai-table{page-break-inside:avoid}
+    @page{size:A4;margin:10mm}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>CNH Industrial — Gestor RIAI</h1>
+    <span>Sistema de gestión de packaging cards</span>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12px">
+    <span id="user-badge"></span>
+    <button onclick="doLogout()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 14px;border-radius:5px;cursor:pointer;font-size:12px">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="navTo('search',this)">🔍 Buscar / Listar</button>
+  <button onclick="navTo('create',this)">➕ Crear RIAI</button>
+</div>
+
+<!-- SEARCH PAGE -->
+<div id="page-search" class="page active">
+  <div class="card">
+    <h2>Buscar RIAIs</h2>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Buscar por N° de parte, descripción o proveedor..." oninput="filterRIAIs()">
+      <button class="btn btn-primary" onclick="filterRIAIs()">Buscar</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="window.location.href=API+'/export/riai'">⬇ Exportar RIAIs</button>
+      <button class="btn btn-secondary btn-sm" onclick="window.location.href=API+'/export/proveedores'">⬇ Exportar Proveedores</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-riai-file').click()">⬆ Importar RIAIs</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-prov-file').click()">⬆ Importar Proveedores</button>
+      <input type="file" id="import-riai-file" accept=".xlsx" style="display:none" onchange="importExcel(this,'riai')">
+      <input type="file" id="import-prov-file" accept=".xlsx" style="display:none" onchange="importExcel(this,'proveedores')">
+    </div>
+    <table class="results-table">
+      <thead>
+        <tr><th>N° Parte</th><th>Descripción</th><th>Proveedor</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="results-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CREATE/EDIT PAGE -->
+<div id="page-create" class="page">
+  <input type="hidden" id="f-id">
+
+  <div class="card">
+    <h2>Configuración del documento</h2>
+    <div class="grid3">
+      <div><label>Idioma</label>
+        <select id="f-lang"><option value="es">Español</option><option value="pt">Português</option><option value="en">English</option></select>
+      </div>
+      <div><label>Unidad de longitud</label>
+        <select id="f-unit-len"><option value="mm">Milímetros (mm)</option><option value="cm">Centímetros (cm)</option><option value="in">Pulgadas (inch)</option></select>
+      </div>
+      <div><label>Unidad de peso</label>
+        <select id="f-unit-wt"><option value="kg">Kilogramos (kg)</option><option value="lb">Libras (lb)</option></select>
+      </div>
+      <div><label>Fecha de elaboración</label><input type="date" id="f-date"></div>
+      <div><label>Estado</label>
+        <select id="f-estado"><option value="Borrador">Borrador</option><option value="Aprobado">Aprobado</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Información del proveedor</h2>
+    <div class="grid2">
+      <div><label>Nombre del proveedor</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="f-supplier-name" placeholder="Escribí para buscar..." oninput="onSupplierInput()" onblur="setTimeout(()=>document.getElementById('supplier-ac').style.display='none',200)">
+          <div id="supplier-ac" class="autocomplete-list"></div>
+        </div>
+      </div>
+      <div><label>Código del proveedor</label>
+        <input type="text" id="f-supplier-code" placeholder="Auto / manual">
+        <div class="auto-tag">⚡ Se completa automáticamente</div>
+      </div>
+      <div class="span2"><label>Dirección de envío</label><input type="text" id="f-supplier-addr"></div>
+      <div><label>Persona de contacto</label><input type="text" id="f-supplier-contact"></div>
+      <div><label>Email</label><input type="text" id="f-supplier-email"></div>
+      <div><label>Teléfono</label><input type="text" id="f-supplier-phone"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Datos de la pieza</h2>
+    <div class="grid3">
+      <div><label>Número de pieza</label><input type="text" id="f-pn" oninput="onPNChange()"></div>
+      <div class="span2"><label>Descripción</label><input type="text" id="f-desc"><div class="auto-tag">⚡ Automático por N° de pieza</div></div>
+      <div><label>Largo (mm)</label><input type="number" id="f-largo" placeholder="0"></div>
+      <div><label>Ancho (mm)</label><input type="number" id="f-ancho" placeholder="0"></div>
+      <div><label>Alto (mm)</label><input type="number" id="f-alto" placeholder="0"></div>
+      <div><label>Peso pieza (kg)</label><input type="number" id="f-peso" step="0.0001" placeholder="0.0000" oninput="recalcAll()"></div>
+      <div><label>MOQ</label><input type="number" id="f-moq" placeholder="0"></div>
+      <div><label>Proyecto</label><input type="text" id="f-proyecto"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Información principal de embalaje</h2>
+    <label style="margin-bottom:8px">¿El embalaje primario y secundario son idénticos?</label>
+    <div class="toggle-group">
+      <label><input type="radio" name="same-pkg" value="no" checked onchange="onSamePkgChange()"> No (son diferentes)</label>
+      <label><input type="radio" name="same-pkg" value="si" onchange="onSamePkgChange()"> Sí (son idénticos)</label>
+    </div>
+
+    <div id="pkg-different">
+      <div class="conditional-section" style="margin-bottom:12px">
+        <div style="font-size:12px;color:#c8102e;font-weight:700;margin-bottom:10px">▸ EMBALAJE PRIMARIO</div>
+        <div class="grid3">
+          <div><label>Tipo</label><select id="f-p1-tipo"><option>Caja con tapa</option><option>Caja sin tapa</option><option>Bandeja</option><option>Bolsa plástica</option><option>Blister</option><option>Bobina</option><option>Contenedor rígido</option><option>Otro</option></select></div>
+          <div><label>Retornable</label><select id="f-p1-ret"><option>No</option><option>Sí</option></select></div>
+          <div><label>Descripción</label><input type="text" id="f-p1-desc"></div>
+          <div><label>Largo (mm)</label><input type="number" id="f-p1-largo" placeholder="0"></div>
+          <div><label>Ancho (mm)</label><input type="number" id="f-p1-ancho" placeholder="0"></div>
+          <div><label>Alto (mm)</label><input type="number" id="f-p1-alto" placeholder="0"></div>
+          <div><label>Peso embalaje (kg)</label><input type="number" id="f-p1-pesoemb" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
+          <div><label>Capacidad (pcs)</label><input type="number" id="f-p1-cap" placeholder="0" oninput="recalcAll()"></div>
+          <div><label>Peso bruto (kg)</label><input type="number" id="f-p1-bruto" readonly><div class="auto-tag">⚡ (Cap × Peso) + Peso emb.</div></div>
+        </div>
+      </div>
+      <div class="conditional-section">
+        <div style="font-size:12px;color:#c8102e;font-weight:700;margin-bottom:10px">▸ EMBALAJE SECUNDARIO</div>
+        <div class="grid3">
+          <div><label>Tipo</label><select id="f-p2-tipo"><option>Caja con tapa</option><option>Caja sin tapa</option><option>Bandeja</option><option>Bolsa plástica</option><option>Blister</option><option>Bobina</option><option>Contenedor rígido</option><option>Otro</option></select></div>
+          <div><label>Retornable</label><select id="f-p2-ret"><option>No</option><option>Sí</option></select></div>
+          <div><label>Descripción</label><input type="text" id="f-p2-desc"></div>
+          <div><label>Largo (mm)</label><input type="number" id="f-p2-largo" placeholder="0"></div>
+          <div><label>Ancho (mm)</label><input type="number" id="f-p2-ancho" placeholder="0"></div>
+          <div><label>Alto (mm)</label><input type="number" id="f-p2-alto" placeholder="0"></div>
+          <div><label>Peso embalaje (kg)</label><input type="number" id="f-p2-pesoemb" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
+          <div><label>Capacidad (pcs)</label><input type="number" id="f-p2-cap" placeholder="0" oninput="recalcAll()"></div>
+          <div><label>Peso bruto (kg)</label><input type="number" id="f-p2-bruto" readonly><div class="auto-tag">⚡ (Cap × Peso) + Peso emb.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pkg-same" style="display:none">
+      <div class="conditional-section">
+        <div style="font-size:12px;color:#c8102e;font-weight:700;margin-bottom:10px">▸ EMBALAJE</div>
+        <div class="grid3">
+          <div><label>Tipo</label><select id="f-ps-tipo"><option>Caja con tapa</option><option>Caja sin tapa</option><option>Bandeja</option><option>Bolsa plástica</option><option>Blister</option><option>Bobina</option><option>Contenedor rígido</option><option>Otro</option></select></div>
+          <div><label>Retornable</label><select id="f-ps-ret"><option>No</option><option>Sí</option></select></div>
+          <div><label>Descripción</label><input type="text" id="f-ps-desc"></div>
+          <div><label>Largo (mm)</label><input type="number" id="f-ps-largo" placeholder="0"></div>
+          <div><label>Ancho (mm)</label><input type="number" id="f-ps-ancho" placeholder="0"></div>
+          <div><label>Alto (mm)</label><input type="number" id="f-ps-alto" placeholder="0"></div>
+          <div><label>Peso embalaje (kg)</label><input type="number" id="f-ps-pesoemb" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
+          <div><label>Capacidad (pcs)</label><input type="number" id="f-ps-cap" placeholder="0" oninput="recalcAll()"></div>
+          <div><label>Peso bruto (kg)</label><input type="number" id="f-ps-bruto" readonly><div class="auto-tag">⚡ (Cap × Peso) + Peso emb.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Accesorios de embalaje</h2>
+    <label>Descripción de protecciones y materiales de cierre</label>
+    <textarea id="f-accesorios" rows="3" placeholder="Ej: Film stretch, esquineros de cartón, bolsas de sílica gel..."></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Imágenes</h2>
+    <div class="grid3">
+      <div>
+        <div class="img-label" style="margin-bottom:6px;font-weight:600">Caja cerrada</div>
+        <div class="img-upload-area" onclick="document.getElementById('img-caja').click()">
+          📦 <span class="img-label">Clic para subir</span>
+          <img id="prev-caja" class="img-preview" style="display:none">
+        </div>
+        <input type="file" id="img-caja" accept="image/*" style="display:none" onchange="previewImg(this,'prev-caja')">
+      </div>
+      <div>
+        <div class="img-label" style="margin-bottom:6px;font-weight:600">Caja abierta</div>
+        <div class="img-upload-area" onclick="document.getElementById('img-abierta').click()">
+          📂 <span class="img-label">Clic para subir</span>
+          <img id="prev-abierta" class="img-preview" style="display:none">
+        </div>
+        <input type="file" id="img-abierta" accept="image/*" style="display:none" onchange="previewImg(this,'prev-abierta')">
+      </div>
+      <div>
+        <div class="img-label" style="margin-bottom:6px;font-weight:600">Pieza embalada</div>
+        <div class="img-upload-area" onclick="document.getElementById('img-embalada').click()">
+          🎁 <span class="img-label">Clic para subir</span>
+          <img id="prev-embalada" class="img-preview" style="display:none">
+        </div>
+        <input type="file" id="img-embalada" accept="image/*" style="display:none" onchange="previewImg(this,'prev-embalada')">
+      </div>
+      <div class="span3">
+        <div class="img-label" style="margin-bottom:6px;font-weight:600">📊 Anexo — Análisis de paletizado</div>
+        <div class="img-upload-area" onclick="document.getElementById('img-paletizado').click()">
+          📊 <span class="img-label">Subí la captura del simulador de paletizado</span>
+          <img id="prev-paletizado" class="img-preview" style="display:none;max-height:160px">
+        </div>
+        <input type="file" id="img-paletizado" accept="image/*" style="display:none" onchange="previewImg(this,'prev-paletizado')">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Aprobaciones</h2>
+    <div class="approval-row" style="font-size:12px;font-weight:700;color:#888;padding-bottom:6px;border-bottom:2px solid #eee">
+      <span>Rol</span><span>Nombre</span><span>Fecha</span>
+    </div>
+    <div class="approval-row">
+      <div style="font-size:13px;padding-top:8px">Elaborado por</div>
+      <div><input type="text" id="ap-elab-nombre" placeholder="Nombre completo"></div>
+      <div><input type="date" id="ap-elab-fecha"></div>
+    </div>
+    <div class="approval-row">
+      <div style="font-size:13px;padding-top:8px">Revisado por</div>
+      <div><input type="text" id="ap-rev-nombre" placeholder="Nombre completo"></div>
+      <div><input type="date" id="ap-rev-fecha"></div>
+    </div>
+    <div class="approval-row">
+      <div style="font-size:13px;padding-top:8px">Aprobado por</div>
+      <div><input type="text" id="ap-apr-nombre" placeholder="Nombre completo"></div>
+      <div><input type="date" id="ap-apr-fecha"></div>
+    </div>
+  </div>
+
+  <div class="flex-end">
+    <button class="btn btn-secondary" onclick="clearForm()">Limpiar</button>
+    <button class="btn btn-primary" onclick="previewRIAI()">👁 Vista previa</button>
+    <button class="btn btn-success" onclick="saveRIAI()">💾 Guardar RIAI</button>
+  </div>
+
+  <!-- PREVIEW MODAL -->
+  <div id="preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="background:#fff;max-width:820px;margin:0 auto;border-radius:8px;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="color:#c8102e">Vista previa — RIAI</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-success btn-sm" onclick="downloadPdf()">📄 Descargar PDF (CNH)</button>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('preview-modal').style.display='none'">✕ Cerrar</button>
+        </div>
+      </div>
+      <div id="riai-preview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API = window.location.origin + "/api";
+let currentUser = null;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+async function checkAuth(){
+  try{
+    const res = await fetch(`${API}/me`,{credentials:'include'});
+    if(!res.ok){ window.location.replace('/login.html'); return false; }
+    currentUser = await res.json();
+    document.getElementById('user-badge').textContent = `${currentUser.username} · ${currentUser.rol}`;
+    if(currentUser.rol==='lectura') document.querySelectorAll('.nav button')[1].style.display='none';
+    return true;
+  }catch(e){ window.location.replace('/login.html'); return false; }
+}
+async function doLogout(){
+  await fetch(`${API}/logout`,{method:'POST',credentials:'include'});
+  window.location.replace('/login.html');
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function navTo(p,btn){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  btn.classList.add('active');
+  if(p==='search') loadList();
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────
+async function loadList(q=''){
+  const rows=await fetch(`${API}/riai?q=${encodeURIComponent(q)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]);
+  const tbody=document.getElementById('results-body');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td><strong>${r.numero_pieza||'—'}</strong></td>
+      <td>${r.descripcion||'—'}</td>
+      <td>${r.proveedor_nombre||'—'}</td>
+      <td>${r.fecha||'—'}</td>
+      <td><span class="badge ${r.estado==='Aprobado'?'badge-ok':'badge-draft'}">${r.estado}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="viewRIAI(${r.id})">👁 Ver</button>
+        <button class="btn btn-secondary btn-sm" onclick="editRIAI(${r.id})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRIAI(${r.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+function filterRIAIs(){ loadList(document.getElementById('search-input').value); }
+
+// ── IMPORT EXCEL ──────────────────────────────────────────────────────────
+async function importExcel(input,tipo){
+  const file=input.files[0]; if(!file) return;
+  const fd=new FormData(); fd.append('file',file);
+  const res=await fetch(`${API}/import/${tipo}`,{method:'POST',credentials:'include',body:fd});
+  const data=await res.json();
+  if(res.ok){
+    let msg=`✅ Importados: ${data.inserted}`;
+    if(data.errors?.length) msg+=`\n⚠ Errores: ${data.errors.slice(0,5).join('\n')}`;
+    alert(msg); if(tipo==='riai') loadList();
+  } else alert('Error: '+(data.error||'No se pudo importar'));
+  input.value='';
+}
+
+// ── SUPPLIER AUTOCOMPLETE ─────────────────────────────────────────────────
+let suppCache=[];
+async function onSupplierInput(){
+  const q=document.getElementById('f-supplier-name').value;
+  if(q.length<2){document.getElementById('supplier-ac').style.display='none';return;}
+  const data=await fetch(`${API}/proveedores?q=${encodeURIComponent(q)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]);
+  suppCache=data;
+  const ac=document.getElementById('supplier-ac');
+  if(!data.length){ac.style.display='none';return;}
+  ac.innerHTML=data.map(s=>`<div onclick="selectSupplier('${s.codigo}')">${s.nombre} <small style="color:#aaa">${s.codigo}</small></div>`).join('');
+  ac.style.display='block';
+}
+function selectSupplier(codigo){
+  const s=suppCache.find(x=>x.codigo===codigo); if(!s) return;
+  document.getElementById('f-supplier-name').value=s.nombre;
+  document.getElementById('f-supplier-code').value=s.codigo;
+  document.getElementById('f-supplier-addr').value=s.direccion||'';
+  document.getElementById('f-supplier-contact').value=s.contacto||'';
+  document.getElementById('f-supplier-email').value=s.email||'';
+  document.getElementById('f-supplier-phone').value=s.telefono||'';
+  document.getElementById('supplier-ac').style.display='none';
+}
+
+// ── PN AUTOCOMPLETE ───────────────────────────────────────────────────────
+let pnTimer;
+function onPNChange(){
+  clearTimeout(pnTimer);
+  pnTimer=setTimeout(async()=>{
+    const pn=document.getElementById('f-pn').value.trim(); if(!pn) return;
+    const data=await fetch(`${API}/piezas/${encodeURIComponent(pn)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>({}));
+    if(data.descripcion) document.getElementById('f-desc').value=data.descripcion;
+  },400);
+}
+
+// ── EMBALAJE TOGGLE ───────────────────────────────────────────────────────
+function onSamePkgChange(){
+  const same=document.querySelector('input[name="same-pkg"]:checked').value==='si';
+  document.getElementById('pkg-different').style.display=same?'none':'block';
+  document.getElementById('pkg-same').style.display=same?'block':'none';
+}
+
+// ── PESO BRUTO ────────────────────────────────────────────────────────────
+function recalcAll(){
+  const p=parseFloat(document.getElementById('f-peso').value)||0;
+  const calc=(capId,embId,brutoId)=>{
+    const cap=parseFloat(document.getElementById(capId).value)||0;
+    const emb=parseFloat(document.getElementById(embId).value)||0;
+    document.getElementById(brutoId).value=((cap*p)+emb).toFixed(3);
+  };
+  calc('f-p1-cap','f-p1-pesoemb','f-p1-bruto');
+  calc('f-p2-cap','f-p2-pesoemb','f-p2-bruto');
+  calc('f-ps-cap','f-ps-pesoemb','f-ps-bruto');
+}
+
+// ── IMAGE PREVIEW ─────────────────────────────────────────────────────────
+function previewImg(input,prevId){
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{const img=document.getElementById(prevId);img.src=e.target.result;img.style.display='block';};
+  r.readAsDataURL(f);
+}
+
+// ── COLLECT FORM ──────────────────────────────────────────────────────────
+function collectForm(){
+  const same=document.querySelector('input[name="same-pkg"]:checked').value==='si';
+  const g=id=>document.getElementById(id)?.value||'';
+  const gi=id=>{const el=document.getElementById(id);return el?.src&&el.src.length>5?el.src:null;};
+  return {
+    fecha:g('f-date'), idioma:g('f-lang'), unidad_long:g('f-unit-len'), unidad_peso:g('f-unit-wt'),
+    proveedor_codigo:g('f-supplier-code'), proveedor_nombre:g('f-supplier-name'),
+    proveedor_direccion:g('f-supplier-addr'), proveedor_contacto:g('f-supplier-contact'),
+    proveedor_email:g('f-supplier-email'), proveedor_telefono:g('f-supplier-phone'),
+    numero_pieza:g('f-pn'), descripcion:g('f-desc'),
+    largo:g('f-largo')||null, ancho:g('f-ancho')||null, alto:g('f-alto')||null,
+    peso:g('f-peso')||null, moq:g('f-moq')||null, proyecto:g('f-proyecto'),
+    emb_identico:same?1:0,
+    p1_tipo:g('f-p1-tipo'), p1_retornable:g('f-p1-ret'), p1_descripcion:g('f-p1-desc'),
+    p1_largo:g('f-p1-largo')||null, p1_ancho:g('f-p1-ancho')||null, p1_alto:g('f-p1-alto')||null,
+    p1_peso_emb:g('f-p1-pesoemb')||null, p1_capacidad:g('f-p1-cap')||null, p1_peso_bruto:g('f-p1-bruto')||null,
+    p2_tipo:g('f-p2-tipo'), p2_retornable:g('f-p2-ret'), p2_descripcion:g('f-p2-desc'),
+    p2_largo:g('f-p2-largo')||null, p2_ancho:g('f-p2-ancho')||null, p2_alto:g('f-p2-alto')||null,
+    p2_peso_emb:g('f-p2-pesoemb')||null, p2_capacidad:g('f-p2-cap')||null, p2_peso_bruto:g('f-p2-bruto')||null,
+    accesorios:g('f-accesorios'),
+    img_caja:gi('prev-caja'), img_abierta:gi('prev-abierta'),
+    img_embalada:gi('prev-embalada'), img_paletizado:gi('prev-paletizado'),
+    ap_elaborado_nombre:g('ap-elab-nombre'), ap_elaborado_fecha:g('ap-elab-fecha'),
+    ap_revisado_nombre:g('ap-rev-nombre'), ap_revisado_fecha:g('ap-rev-fecha'),
+    ap_aprobado_nombre:g('ap-apr-nombre'), ap_aprobado_fecha:g('ap-apr-fecha'),
+    estado:g('f-estado'),
+    // para vista previa
+    same, ul:g('f-unit-len'), uw:g('f-unit-wt'), lang:g('f-lang'),
+    pkg:same?{tipo:g('f-ps-tipo'),ret:g('f-ps-ret'),desc:g('f-ps-desc'),largo:g('f-ps-largo'),ancho:g('f-ps-ancho'),alto:g('f-ps-alto'),pesoemb:g('f-ps-pesoemb'),cap:g('f-ps-cap'),bruto:g('f-ps-bruto')}:null,
+    p1:!same?{tipo:g('f-p1-tipo'),ret:g('f-p1-ret'),desc:g('f-p1-desc'),largo:g('f-p1-largo'),ancho:g('f-p1-ancho'),alto:g('f-p1-alto'),pesoemb:g('f-p1-pesoemb'),cap:g('f-p1-cap'),bruto:g('f-p1-bruto')}:null,
+    p2:!same?{tipo:g('f-p2-tipo'),ret:g('f-p2-ret'),desc:g('f-p2-desc'),largo:g('f-p2-largo'),ancho:g('f-p2-ancho'),alto:g('f-p2-alto'),pesoemb:g('f-p2-pesoemb'),cap:g('f-p2-cap'),bruto:g('f-p2-bruto')}:null,
+    ap:{elaboradoNombre:g('ap-elab-nombre'),elaboradoFecha:g('ap-elab-fecha'),revisadoNombre:g('ap-rev-nombre'),revisadoFecha:g('ap-rev-fecha'),aprobadoNombre:g('ap-apr-nombre'),aprobadoFecha:g('ap-apr-fecha')},
+    imgs:{caja:gi('prev-caja'),abierta:gi('prev-abierta'),embalada:gi('prev-embalada'),paletizado:gi('prev-paletizado')},
+  };
+}
+
+// ── SAVE ──────────────────────────────────────────────────────────────────
+async function saveRIAI(){
+  const d=collectForm();
+  if(!d.numero_pieza){toast('Ingresá el número de pieza.',false);return;}
+  const id=document.getElementById('f-id').value;
+  const url=id?`${API}/riai/${id}`:`${API}/riai`;
+  const method=id?'PUT':'POST';
+  const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(d)}).catch(()=>null);
+  if(res&&(res.status===200||res.status===201)){
+    const result=await res.json();
+    if(!id) document.getElementById('f-id').value=result.id;
+    toast(id?'RIAI actualizado ✅':'RIAI guardado ✅');
+    window.__currentPreviewId=result.id||id;
+  } else toast('Error al guardar. ¿Está corriendo el servidor?',false);
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────
+async function editRIAI(id){
+  const d=await fetch(`${API}/riai/${id}`,{credentials:'include'}).then(r=>r.json()).catch(()=>null);
+  if(!d){toast('Error al cargar',false);return;}
+  document.querySelector('.nav button:nth-child(2)').click();
+  setTimeout(()=>{
+    const s=v=>v||'';
+    document.getElementById('f-id').value=d.id;
+    document.getElementById('f-date').value=s(d.fecha);
+    document.getElementById('f-lang').value=s(d.idioma)||'es';
+    document.getElementById('f-unit-len').value=s(d.unidad_long)||'mm';
+    document.getElementById('f-unit-wt').value=s(d.unidad_peso)||'kg';
+    document.getElementById('f-estado').value=s(d.estado)||'Borrador';
+    document.getElementById('f-supplier-name').value=s(d.proveedor_nombre);
+    document.getElementById('f-supplier-code').value=s(d.proveedor_codigo);
+    document.getElementById('f-supplier-addr').value=s(d.proveedor_direccion);
+    document.getElementById('f-supplier-contact').value=s(d.proveedor_contacto);
+    document.getElementById('f-supplier-email').value=s(d.proveedor_email);
+    document.getElementById('f-supplier-phone').value=s(d.proveedor_telefono);
+    document.getElementById('f-pn').value=s(d.numero_pieza);
+    document.getElementById('f-desc').value=s(d.descripcion);
+    document.getElementById('f-largo').value=s(d.largo);
+    document.getElementById('f-ancho').value=s(d.ancho);
+    document.getElementById('f-alto').value=s(d.alto);
+    document.getElementById('f-peso').value=s(d.peso);
+    document.getElementById('f-moq').value=s(d.moq);
+    document.getElementById('f-proyecto').value=s(d.proyecto);
+    const same=d.emb_identico===1;
+    document.querySelector(`input[name="same-pkg"][value="${same?'si':'no'}"]`).checked=true;
+    onSamePkgChange();
+    if(same){
+      document.getElementById('f-ps-tipo').value=s(d.p1_tipo);
+      document.getElementById('f-ps-ret').value=s(d.p1_retornable);
+      document.getElementById('f-ps-desc').value=s(d.p1_descripcion);
+      document.getElementById('f-ps-largo').value=s(d.p1_largo);
+      document.getElementById('f-ps-ancho').value=s(d.p1_ancho);
+      document.getElementById('f-ps-alto').value=s(d.p1_alto);
+      document.getElementById('f-ps-pesoemb').value=s(d.p1_peso_emb);
+      document.getElementById('f-ps-cap').value=s(d.p1_capacidad);
+      document.getElementById('f-ps-bruto').value=s(d.p1_peso_bruto);
+    } else {
+      ['p1','p2'].forEach(px=>{
+        document.getElementById(`f-${px}-tipo`).value=s(d[`${px}_tipo`]);
+        document.getElementById(`f-${px}-ret`).value=s(d[`${px}_retornable`]);
+        document.getElementById(`f-${px}-desc`).value=s(d[`${px}_descripcion`]);
+        document.getElementById(`f-${px}-largo`).value=s(d[`${px}_largo`]);
+        document.getElementById(`f-${px}-ancho`).value=s(d[`${px}_ancho`]);
+        document.getElementById(`f-${px}-alto`).value=s(d[`${px}_alto`]);
+        document.getElementById(`f-${px}-pesoemb`).value=s(d[`${px}_peso_emb`]);
+        document.getElementById(`f-${px}-cap`).value=s(d[`${px}_capacidad`]);
+        document.getElementById(`f-${px}-bruto`).value=s(d[`${px}_peso_bruto`]);
+      });
+    }
+    document.getElementById('f-accesorios').value=s(d.accesorios);
+    document.getElementById('ap-elab-nombre').value=s(d.ap_elaborado_nombre);
+    document.getElementById('ap-elab-fecha').value=s(d.ap_elaborado_fecha);
+    document.getElementById('ap-rev-nombre').value=s(d.ap_revisado_nombre);
+    document.getElementById('ap-rev-fecha').value=s(d.ap_revisado_fecha);
+    document.getElementById('ap-apr-nombre').value=s(d.ap_aprobado_nombre);
+    document.getElementById('ap-apr-fecha').value=s(d.ap_aprobado_fecha);
+    ['caja','abierta','embalada','paletizado'].forEach(k=>{
+      const src=d[`img_${k}`];
+      if(src){const img=document.getElementById(`prev-${k}`);img.src=src;img.style.display='block';}
+    });
+    window.__currentPreviewId=d.id;
+  },100);
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+async function deleteRIAI(id){
+  if(!confirm('¿Eliminar este RIAI?')) return;
+  const res=await fetch(`${API}/riai/${id}`,{method:'DELETE',credentials:'include'}).catch(()=>null);
+  if(res?.ok){toast('RIAI eliminado');loadList();}
+  else toast('Error al eliminar',false);
+}
+
+// ── VIEW RIAI ─────────────────────────────────────────────────────────────
+async function viewRIAI(id){
+  const d=await fetch(`${API}/riai/${id}`,{credentials:'include'}).then(r=>r.json()).catch(()=>null);
+  if(!d){toast('Error al cargar',false);return;}
+  const same=d.emb_identico===1;
+  const rd={
+    lang:d.idioma||'es', ul:d.unidad_long||'mm', uw:d.unidad_peso||'kg', date:d.fecha,
+    supplierName:d.proveedor_nombre, supplierCode:d.proveedor_codigo,
+    supplierAddr:d.proveedor_direccion, supplierContact:d.proveedor_contacto,
+    supplierEmail:d.proveedor_email, supplierPhone:d.proveedor_telefono,
+    pn:d.numero_pieza, desc:d.descripcion,
+    largo:d.largo, ancho:d.ancho, alto:d.alto, peso:d.peso, moq:d.moq, proyecto:d.proyecto,
+    same, accesorios:d.accesorios,
+    imgs:{caja:d.img_caja,abierta:d.img_abierta,embalada:d.img_embalada,paletizado:d.img_paletizado},
+    ap:{elaboradoNombre:d.ap_elaborado_nombre,elaboradoFecha:d.ap_elaborado_fecha,
+        revisadoNombre:d.ap_revisado_nombre,revisadoFecha:d.ap_revisado_fecha,
+        aprobadoNombre:d.ap_aprobado_nombre,aprobadoFecha:d.ap_aprobado_fecha},
+    pkg:same?{tipo:d.p1_tipo,ret:d.p1_retornable,desc:d.p1_descripcion,largo:d.p1_largo,ancho:d.p1_ancho,alto:d.p1_alto,pesoemb:d.p1_peso_emb,cap:d.p1_capacidad,bruto:d.p1_peso_bruto}:null,
+    p1:!same?{tipo:d.p1_tipo,ret:d.p1_retornable,desc:d.p1_descripcion,largo:d.p1_largo,ancho:d.p1_ancho,alto:d.p1_alto,pesoemb:d.p1_peso_emb,cap:d.p1_capacidad,bruto:d.p1_peso_bruto}:null,
+    p2:!same?{tipo:d.p2_tipo,ret:d.p2_retornable,desc:d.p2_descripcion,largo:d.p2_largo,ancho:d.p2_ancho,alto:d.p2_alto,pesoemb:d.p2_peso_emb,cap:d.p2_capacidad,bruto:d.p2_peso_bruto}:null,
+  };
+  document.getElementById('riai-preview').innerHTML=renderRIAI(rd);
+  document.getElementById('preview-modal').style.display='block';
+  window.__currentPreviewId=id;
+}
+
+// ── RENDER RIAI HTML ──────────────────────────────────────────────────────
+const LABELS={
+  es:{title:'RIAI — INSTRUCCIÓN DE EMBALAJE',supplier:'Información del proveedor',piece:'Datos de la pieza',
+      prim:'Embalaje Primario',sec:'Embalaje Secundario',unico:'Embalaje',
+      acc:'Accesorios',imgs:'Imágenes',appr:'Aprobaciones',
+      elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprobado por',fecha:'Fecha',
+      pn:'N° de pieza',desc:'Descripción',largo:'Largo',ancho:'Ancho',alto:'Alto',peso:'Peso',moq:'MOQ',proyecto:'Proyecto',
+      tipo:'Tipo',ret:'Retornable',cap:'Capacidad',pesoemb:'Peso embalaje',bruto:'Peso bruto',
+      cod:'Código',addr:'Dirección',contact:'Contacto',email:'Email',phone:'Teléfono',
+      img1:'Caja cerrada',img2:'Caja abierta',img3:'Pieza embalada',img4:'Análisis paletizado'},
+  pt:{title:'RIAI — INSTRUÇÃO DE EMBALAGEM',supplier:'Informações do Fornecedor',piece:'Dados da Peça',
+      prim:'Embalagem Primária',sec:'Embalagem Secundária',unico:'Embalagem',
+      acc:'Acessórios',imgs:'Imagens',appr:'Aprovações',
+      elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprovado por',fecha:'Data',
+      pn:'N° da peça',desc:'Descrição',largo:'Comprimento',ancho:'Largura',alto:'Altura',peso:'Peso',moq:'MOQ',projeto:'Projeto',
+      tipo:'Tipo',ret:'Retornável',cap:'Capacidade',pesoemb:'Peso embalagem',bruto:'Peso bruto',
+      cod:'Código',addr:'Endereço',contact:'Contato',email:'Email',phone:'Telefone',
+      img1:'Caixa fechada',img2:'Caixa aberta',img3:'Peça embalada',img4:'Análise de paletização'},
+  en:{title:'RIAI — PACKAGING INSTRUCTION',supplier:'Supplier Information',piece:'Part Data',
+      prim:'Primary Packaging',sec:'Secondary Packaging',unico:'Packaging',
+      acc:'Accessories',imgs:'Images',appr:'Approvals',
+      elaborado:'Prepared by',revisado:'Reviewed by',aprobado:'Approved by',fecha:'Date',
+      pn:'Part Number',desc:'Description',largo:'Length',ancho:'Width',alto:'Height',peso:'Weight',moq:'MOQ',proyecto:'Project',
+      tipo:'Type',ret:'Returnable',cap:'Capacity',pesoemb:'Pkg weight',bruto:'Gross weight',
+      cod:'Code',addr:'Address',contact:'Contact',email:'Email',phone:'Phone',
+      img1:'Closed box',img2:'Open box',img3:'Packed part',img4:'Palletizing analysis'},
+};
+
+function renderRIAI(d){
+  const L=LABELS[d.lang]||LABELS.es;
+  const ul=d.ul||'mm', uw=d.uw||'kg';
+  const fv=(lbl,val)=>`<span class="riai-field-label">${lbl}</span><span class="riai-field-val">${val||'—'}</span>`;
+  const imgBox=(src,lbl)=>src&&src.length>5?`<div class="img-box"><img src="${src}" alt="${lbl}"></div>`:`<div class="img-box">${lbl}</div>`;
+  const pkgRow=(pkg,title)=>`
+    <tr><td colspan="9" class="riai-subsection">${title}</td></tr>
+    <tr>
+      <td>${fv(L.tipo,pkg?.tipo)}</td><td>${fv(L.ret,pkg?.ret)}</td>
+      <td colspan="2">${fv(L.desc,pkg?.desc)}</td>
+      <td>${fv(L.largo+' ('+ul+')',pkg?.largo)}</td>
+      <td>${fv(L.ancho+' ('+ul+')',pkg?.ancho)}</td>
+      <td>${fv(L.alto+' ('+ul+')',pkg?.alto)}</td>
+      <td>${fv(L.pesoemb+' ('+uw+')',pkg?.pesoemb)}</td>
+      <td>${fv(L.cap,pkg?.cap)}</td>
+    </tr>
+    <tr><td colspan="9">${fv(L.bruto+' ('+uw+')',pkg?.bruto)}</td></tr>`;
+
+  return `<table class="riai-table">
+    <tr>
+      <td style="width:90px"><div style="font-size:18px;font-weight:900;color:#c8102e">CNH</div><div style="font-size:8px">Industrial</div></td>
+      <td colspan="7" style="text-align:center"><div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px">${L.title}</div></td>
+      <td><span class="riai-field-label">${L.fecha}</span><strong>${d.date||'—'}</strong></td>
+    </tr>
+    <tr><td colspan="9" class="riai-section-title">${L.supplier}</td></tr>
+    <tr>
+      <td colspan="2">${fv(L.cod,d.supplierCode)}</td>
+      <td colspan="2">${fv('Nombre',d.supplierName)}</td>
+      <td colspan="2">${fv(L.addr,d.supplierAddr)}</td>
+      <td colspan="3">${fv(L.contact,d.supplierContact)}</td>
+    </tr>
+    <tr>
+      <td colspan="4">${fv(L.email,d.supplierEmail)}</td>
+      <td colspan="5">${fv(L.phone,d.supplierPhone)}</td>
+    </tr>
+    <tr><td colspan="9" class="riai-section-title">${L.piece}</td></tr>
+    <tr>
+      <td colspan="2">${fv(L.pn,d.pn)}</td>
+      <td colspan="4">${fv(L.desc,d.desc)}</td>
+      <td>${fv(L.largo+' ('+ul+')',d.largo)}</td>
+      <td>${fv(L.ancho+' ('+ul+')',d.ancho)}</td>
+      <td>${fv(L.alto+' ('+ul+')',d.alto)}</td>
+    </tr>
+    <tr>
+      <td colspan="2">${fv(L.peso+' ('+uw+')',d.peso)}</td>
+      <td colspan="2">${fv(L.moq,d.moq)}</td>
+      <td colspan="5">${fv(L.proyecto||'Proyecto',d.proyecto)}</td>
+    </tr>
+    ${d.same?pkgRow(d.pkg,L.unico):pkgRow(d.p1,L.prim)+pkgRow(d.p2,L.sec)}
+    <tr><td colspan="9" class="riai-section-title">${L.acc}</td></tr>
+    <tr><td colspan="9" style="padding:8px;font-size:11px">${d.accesorios||'—'}</td></tr>
+    <tr><td colspan="9" class="riai-section-title">${L.imgs}</td></tr>
+    <tr>
+      <td colspan="3">${imgBox(d.imgs?.caja,L.img1)}</td>
+      <td colspan="3">${imgBox(d.imgs?.abierta,L.img2)}</td>
+      <td colspan="3">${imgBox(d.imgs?.embalada,L.img3)}</td>
+    </tr>
+    ${d.imgs?.paletizado?`<tr><td colspan="9" class="riai-section-title">${L.img4}</td></tr><tr><td colspan="9">${imgBox(d.imgs.paletizado,L.img4)}</td></tr>`:''}
+    <tr><td colspan="9" class="riai-section-title">${L.appr}</td></tr>
+    <tr>
+      <td colspan="3"><span class="riai-field-label">${L.elaborado}</span><span class="riai-field-val">${d.ap?.elaboradoNombre||'—'}</span><br><span class="riai-field-label">${L.fecha}: ${d.ap?.elaboradoFecha||'—'}</span></td>
+      <td colspan="3"><span class="riai-field-label">${L.revisado}</span><span class="riai-field-val">${d.ap?.revisadoNombre||'—'}</span><br><span class="riai-field-label">${L.fecha}: ${d.ap?.revisadoFecha||'—'}</span></td>
+      <td colspan="3"><span class="riai-field-label">${L.aprobado}</span><span class="riai-field-val">${d.ap?.aprobadoNombre||'—'}</span><br><span class="riai-field-label">${L.fecha}: ${d.ap?.aprobadoFecha||'—'}</span></td>
+    </tr>
+  </table>`;
+}
+
+function previewRIAI(){
+  const d=collectForm();
+  document.getElementById('riai-preview').innerHTML=renderRIAI(d);
+  document.getElementById('preview-modal').style.display='block';
+  window.__currentPreviewId=null;
+}
+
+function downloadPdf(){
+  const id=window.__currentPreviewId;
+  if(!id){alert('Primero guardá el RIAI para descargar el PDF.');return;}
+  window.location.href=`${API}/riai/${id}/pdf`;
+}
+
+function toast(msg,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${ok?'toast-ok':'toast-err'} show`;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function clearForm(){
+  document.getElementById('f-id').value='';
+  document.querySelectorAll('#page-create input:not([type=radio]):not([type=file]),#page-create select,#page-create textarea')
+    .forEach(el=>{if(!el.readOnly) el.value='';});
+  document.querySelectorAll('#page-create input[type=radio]')[0].checked=true;
+  onSamePkgChange();
+  ['caja','abierta','embalada','paletizado'].forEach(k=>{
+    const img=document.getElementById(`prev-${k}`);if(img){img.src='';img.style.display='none';}
+  });
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value=today;
+  document.getElementById('ap-elab-fecha').value=today;
+  window.__currentPreviewId=null;
+}
+
+window.onload=async()=>{
+  const ok=await checkAuth(); if(!ok) return;
+  loadList();
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value=today;
+  document.getElementById('ap-elab-fecha').value=today;
+};
+</script>
+</body>
+</html>

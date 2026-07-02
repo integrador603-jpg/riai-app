@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión — Gestor RIAI</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#c8102e,#7a0a1c);min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .card{background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.3);padding:40px;width:100%;max-width:380px}
+  .logo{text-align:center;margin-bottom:24px}
+  .logo .cnh{font-size:32px;font-weight:900;color:#c8102e;letter-spacing:2px}
+  .logo .sub{font-size:12px;color:#888;margin-top:4px}
+  h1{font-size:16px;text-align:center;margin-bottom:24px;color:#333;font-weight:600}
+  .fld{margin-bottom:16px}
+  .fld label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px}
+  .fld input{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:6px;font-size:14px}
+  .fld input:focus{outline:none;border-color:#c8102e}
+  .btn{width:100%;padding:11px;background:#c8102e;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+  .btn:hover{background:#a00d25}
+  .error{background:#fde8e8;color:#c0392b;padding:10px;border-radius:6px;font-size:12px;margin-bottom:16px;display:none}
+  .hint{text-align:center;font-size:11px;color:#aaa;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="cnh">CNH</div>
+    <div class="sub">Industrial — Gestor RIAI</div>
+  </div>
+  <h1>Iniciar sesión</h1>
+  <div class="error" id="error"></div>
+  <div class="fld">
+    <label>Usuario</label>
+    <input type="text" id="username" placeholder="usuario" autofocus>
+  </div>
+  <div class="fld">
+    <label>Contraseña</label>
+    <input type="password" id="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <button class="btn" onclick="doLogin()">Ingresar</button>
+  <div class="hint">Sistema interno — Logística CNH Industrial Córdoba</div>
+</div>
+<script>
+const API = window.location.origin + "/api";
+async function doLogin(){
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const errEl = document.getElementById('error');
+  errEl.style.display='none';
+  if(!username||!password){
+    errEl.textContent='Completá usuario y contraseña.';
+    errEl.style.display='block'; return;
+  }
+  try{
+    const res = await fetch(`${API}/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body:JSON.stringify({username,password})
+    });
+    if(res.ok){ window.location.replace('/'); }
+    else{
+      const data=await res.json();
+      errEl.textContent=data.error||'Error al iniciar sesión';
+      errEl.style.display='block';
+    }
+  }catch(e){
+    errEl.textContent='No se pudo conectar al servidor.';
+    errEl.style.display='block';
+  }
+}
+</script>
+</body>
+</html>
