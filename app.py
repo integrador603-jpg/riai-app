@@ -8,6 +8,7 @@ import os
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "static"))
 app.secret_key = os.environ.get("SECRET_KEY", "cnh-riai-secret-2026")
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 CORS(app, supports_credentials=True)
 
 # Inicializar DB al arrancar (funciona tanto con python app.py como con gunicorn)
