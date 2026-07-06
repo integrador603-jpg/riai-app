@@ -121,7 +121,7 @@ def init_db():
             ("HID004","Hidráulica Córdoba S.A.","Av. Fuerza Aérea 3500, Córdoba","Ana Torres","atorres@hidraulicacba.com.ar","+54 351 460-3456"),
         ])
 
-    c.execute("SELECT COUNT(*) FROM piezas")
+    c.execute("SELECT COUNT(*) FROM piezas") 
     if c.fetchone()[0] == 0:
         c.executemany("INSERT INTO piezas VALUES (?,?)", [
             ("84567890","BRACKET SOPORTE MOTOR"),
