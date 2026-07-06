@@ -68,7 +68,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .badge-lectura{background:#f0f0f0;color:#555}
 .search-row{display:flex;gap:10px;margin-bottom:16px}
 .search-row input{flex:1}
-.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.img-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:4px;box-shadow:0 0 40px rgba(0,0,0,.5)}
 .img-slot{position:relative}
 .img-upload{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border .2s;background:#fafafa}
 .img-upload:hover{border-color:var(--rojo);background:#fef5f6}
@@ -557,6 +560,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="document.getElementById('lightbox').classList.remove('open')">
+  <img id="lightbox-img" src="">
+</div>
 
 <script>
 const API = window.location.origin + "/api";
@@ -1051,7 +1059,9 @@ function renderRIAI(d){
   const L=RLABELS[d.lang]||RLABELS.es;
   const ul=d.ul||'mm',uw=d.uw||'kg';
   const fv=(lbl,val)=>`<span class="riai-lbl">${lbl}</span><span class="riai-val">${val||'—'}</span>`;
-  const imgBox=(src,lbl)=>src&&src.length>10?`<div class="riai-imgbox"><img src="${src}" alt="${lbl}"></div>`:`<div class="riai-imgbox">${lbl}</div>`;
+  const imgBox=(src,lbl)=>src&&src.length>10
+    ?`<div class="riai-imgbox" style="cursor:zoom-in" onclick="openLightbox('${src}')"><img src="${src}" alt="${lbl}"></div>`
+    :`<div class="riai-imgbox">${lbl}</div>`;
   const pkgRow=(pkg,title)=>`
     <tr><td colspan="10" class="riai-subsec">${title}</td></tr>
     <tr>
@@ -1184,6 +1194,11 @@ async function cambiarMiPassword(){
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────
+function openLightbox(src){
+  document.getElementById('lightbox-img').src=src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
 function toast(msg,ok=true){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className=`toast ${ok?'toast-ok':'toast-err'} show`;
