@@ -1,6 +1,6 @@
 import sqlite3, os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "riai.db")
+DB_PATH = os.environ.get("DB_PATH", os.path.join("/app/data", "riai.db"))
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
