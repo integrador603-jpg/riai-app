@@ -168,6 +168,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     <div class="nav-section">Principal</div>
     <div class="nav-item active" id="nav-search" onclick="navTo('search',this)"><span class="nav-icon">&#9776;</span> Buscar / Listar</div>
     <div class="nav-item" id="nav-create" onclick="navTo('create',this)"><span class="nav-icon">+</span> Crear RIAI</div>
+    <div class="nav-item" id="nav-control" onclick="navTo('control',this)"><span class="nav-icon">&#10003;</span> Control</div>
     <div class="nav-divider"></div>
     <div class="nav-section">Datos</div>
     <div class="nav-item" id="nav-importexport" onclick="navTo('importexport',this)"><span class="nav-icon">&#8645;</span> Importar / Exportar</div>
@@ -478,6 +479,93 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   </div>
 </div>
 
+<!-- CONTROL -->
+<div id="page-control" class="page">
+  <input type="hidden" id="ctrl-id">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <h2 style="font-size:16px;font-weight:700" id="ctrl-title">Control de Embalaje</h2>
+    <button class="btn btn-primary" onclick="toggleCtrlForm(true)">Nuevo registro</button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card" id="ctrl-form" style="display:none">
+    <div class="card-header" id="ctrl-form-title">Nuevo registro de control</div>
+    <div class="g3">
+      <div class="fld"><label>Fecha</label><input type="date" id="ctrl-fecha"></div>
+      <div class="fld"><label>Número de pieza (PN)</label>
+        <input type="text" id="ctrl-pn" oninput="onCtrlPNChange()">
+        <div class="auto-tag" id="ctrl-pn-desc"></div>
+      </div>
+      <div class="fld"><label>Proveedor</label>
+        <div class="ac-wrap">
+          <input type="text" id="ctrl-supplier-name" placeholder="Escribir para buscar..." oninput="onCtrlSupplierInput()" onblur="setTimeout(()=>document.getElementById('ctrl-supplier-ac').style.display='none',200)">
+          <div id="ctrl-supplier-ac" class="ac-list"></div>
+        </div>
+      </div>
+      <div class="fld"><label>Largo (mm)</label><input type="number" id="ctrl-largo" placeholder="0"></div>
+      <div class="fld"><label>Ancho (mm)</label><input type="number" id="ctrl-ancho" placeholder="0"></div>
+      <div class="fld"><label>Alto (mm)</label><input type="number" id="ctrl-alto" placeholder="0"></div>
+      <div class="fld"><label>Cantidad piezas por caja</label><input type="number" id="ctrl-qty" placeholder="0"></div>
+      <div class="fld s2"><label>Notas</label><input type="text" id="ctrl-notas" placeholder="Observaciones..."></div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="section-label" style="margin-top:16px">Fotos</div>
+    <div class="img-grid" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="img-slot">
+        <div class="img-slot-label">Caja cerrada</div>
+        <button class="img-remove" id="rm-ctrl-cerrada" onclick="removeCtrlImg('cerrada')">&#215;</button>
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-cerrada').click()">
+          <div class="img-upload-icon">&#9679;</div>
+          <div class="img-upload-text">Seleccionar imagen</div>
+          <img id="prev-ctrl-cerrada" class="img-preview">
+        </div>
+        <input type="file" id="up-ctrl-cerrada" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'cerrada')">
+      </div>
+      <div class="img-slot">
+        <div class="img-slot-label">Caja abierta</div>
+        <button class="img-remove" id="rm-ctrl-abierta" onclick="removeCtrlImg('abierta')">&#215;</button>
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-abierta').click()">
+          <div class="img-upload-icon">&#9679;</div>
+          <div class="img-upload-text">Seleccionar imagen</div>
+          <img id="prev-ctrl-abierta" class="img-preview">
+        </div>
+        <input type="file" id="up-ctrl-abierta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'abierta')">
+      </div>
+      <div class="img-slot">
+        <div class="img-slot-label">Etiqueta del proveedor</div>
+        <button class="img-remove" id="rm-ctrl-etiqueta" onclick="removeCtrlImg('etiqueta')">&#215;</button>
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-etiqueta').click()">
+          <div class="img-upload-icon">&#9679;</div>
+          <div class="img-upload-text">Seleccionar imagen</div>
+          <img id="prev-ctrl-etiqueta" class="img-preview">
+        </div>
+        <input type="file" id="up-ctrl-etiqueta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn btn-secondary" onclick="toggleCtrlForm(false)">Cancelar</button>
+      <button class="btn btn-success" onclick="saveControl()">Guardar registro</button>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="card">
+    <div class="card-header">Registros de control</div>
+    <div class="search-row">
+      <input type="text" id="ctrl-search" placeholder="Buscar por N° de parte o proveedor...">
+      <button class="btn btn-primary" onclick="loadControl(document.getElementById('ctrl-search').value)">Buscar</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Fecha</th><th>N° Parte</th><th>Proveedor</th><th>Dimensiones (mm)</th><th>Qty/caja</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="ctrl-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- IMPORT/EXPORT -->
 <div id="page-importexport" class="page">
   <div class="card">
@@ -730,6 +818,7 @@ function navTo(p,el){
   if(window.innerWidth<=900) document.getElementById('sidebar').classList.remove('open');
   if(p==='search') loadList();
   if(p==='usuarios') loadUsuarios();
+  if(p==='control') loadControl();
 }
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
@@ -1130,6 +1219,182 @@ function renderRIAI(d){
       </tr>
     </table>
   </div>`;
+}
+
+// ── CONTROL ───────────────────────────────────────────────────────────────
+let ctrlSuppCache = [];
+
+function toggleCtrlForm(show){
+  document.getElementById('ctrl-form').style.display = show ? 'block' : 'none';
+  if(show){
+    clearCtrlForm();
+    document.getElementById('ctrl-form-title').textContent = 'Nuevo registro de control';
+  }
+}
+
+function clearCtrlForm(){
+  document.getElementById('ctrl-id').value='';
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('ctrl-fecha').value=today;
+  ['ctrl-pn','ctrl-supplier-name','ctrl-largo','ctrl-ancho','ctrl-alto','ctrl-qty','ctrl-notas']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ctrl-pn-desc').textContent='';
+  ['cerrada','abierta','etiqueta'].forEach(k=>{
+    const img=document.getElementById(`prev-ctrl-${k}`);if(img){img.src='';img.style.display='none';}
+    const rm=document.getElementById(`rm-ctrl-${k}`);if(rm) rm.classList.remove('visible');
+    const up=document.getElementById(`up-ctrl-${k}`);if(up) up.value='';
+  });
+}
+
+async function onCtrlSupplierInput(){
+  const q=document.getElementById('ctrl-supplier-name').value;
+  if(q.length<2){document.getElementById('ctrl-supplier-ac').style.display='none';return;}
+  const data=await fetch(`${API}/proveedores?q=${encodeURIComponent(q)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]);
+  ctrlSuppCache=data;
+  const ac=document.getElementById('ctrl-supplier-ac');
+  if(!data.length){ac.style.display='none';return;}
+  ac.innerHTML=data.map(s=>`<div onclick="selectCtrlSupplier('${s.codigo}')">${s.nombre} <small style="color:#aaa">${s.codigo}</small></div>`).join('');
+  ac.style.display='block';
+}
+function selectCtrlSupplier(codigo){
+  const s=ctrlSuppCache.find(x=>x.codigo===codigo);if(!s) return;
+  document.getElementById('ctrl-supplier-name').value=s.nombre;
+  document.getElementById('ctrl-supplier-ac').style.display='none';
+}
+
+let ctrlPNTimer;
+function onCtrlPNChange(){
+  clearTimeout(ctrlPNTimer);
+  ctrlPNTimer=setTimeout(async()=>{
+    const pn=document.getElementById('ctrl-pn').value.trim();if(!pn) return;
+    const data=await fetch(`${API}/piezas/${encodeURIComponent(pn)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>({}));
+    document.getElementById('ctrl-pn-desc').textContent=data.descripcion||'';
+  },400);
+}
+
+function previewCtrlImg(input,key){
+  const f=input.files[0];if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=document.getElementById(`prev-ctrl-${key}`);
+    img.src=e.target.result;img.style.display='block';
+    document.getElementById(`rm-ctrl-${key}`).classList.add('visible');
+  };
+  r.readAsDataURL(f);
+}
+function removeCtrlImg(key){
+  const img=document.getElementById(`prev-ctrl-${key}`);
+  img.src='';img.style.display='none';
+  document.getElementById(`rm-ctrl-${key}`).classList.remove('visible');
+  document.getElementById(`up-ctrl-${key}`).value='';
+}
+
+async function loadControl(q=''){
+  const rows=await fetch(`${API}/control?q=${encodeURIComponent(q)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]);
+  const tbody=document.getElementById('ctrl-body');
+  const canEdit=currentUser?.rol!=='lectura';
+  const canDelete=currentUser?.rol==='admin';
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px">Sin registros</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.fecha||'—'}</td>
+      <td><strong>${r.numero_pieza||'—'}</strong></td>
+      <td>${r.proveedor_nombre||'—'}</td>
+      <td>${r.largo||'—'} × ${r.ancho||'—'} × ${r.alto||'—'}</td>
+      <td>${r.qty_por_caja||'—'}</td>
+      <td class="actions">
+        <button class="btn btn-outline btn-xs" onclick="viewControl(${r.id})">Ver</button>
+        ${canEdit?`<button class="btn btn-secondary btn-xs" onclick="editControl(${r.id})">Editar</button>`:''}
+        ${canDelete?`<button class="btn btn-danger btn-xs" onclick="deleteControl(${r.id})">Eliminar</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+async function saveControl(){
+  const g=id=>document.getElementById(id)?.value||'';
+  const gi=id=>{const el=document.getElementById(id);return el?.src&&el.src.length>10?el.src:null;};
+  const suppName=g('ctrl-supplier-name');
+  const suppCod=ctrlSuppCache.find(x=>x.nombre===suppName)?.codigo||'';
+  const d={
+    fecha:g('ctrl-fecha'),numero_pieza:g('ctrl-pn'),
+    proveedor_nombre:suppName, proveedor_codigo:suppCod,
+    largo:g('ctrl-largo')||null, ancho:g('ctrl-ancho')||null, alto:g('ctrl-alto')||null,
+    qty_por_caja:g('ctrl-qty')||null, notas:g('ctrl-notas'),
+    img_cerrada:gi('prev-ctrl-cerrada'), img_abierta:gi('prev-ctrl-abierta'),
+    img_etiqueta:gi('prev-ctrl-etiqueta'),
+  };
+  if(!d.numero_pieza){toast('Ingresá el número de pieza.',false);return;}
+  const id=document.getElementById('ctrl-id').value;
+  const url=id?`${API}/control/${id}`:`${API}/control`;
+  const method=id?'PUT':'POST';
+  try{
+    const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(d)});
+    if(res.ok||res.status===201){
+      toast(id?'Registro actualizado':'Registro guardado');
+      toggleCtrlForm(false);
+      loadControl();
+    }else toast('Error al guardar.',false);
+  }catch(e){toast('Error de conexión.',false);}
+}
+
+async function editControl(id){
+  const d=await fetch(`${API}/control/${id}`,{credentials:'include'}).then(r=>r.json()).catch(()=>null);
+  if(!d){toast('Error al cargar',false);return;}
+  toggleCtrlForm(true);
+  document.getElementById('ctrl-form-title').textContent='Editar registro de control';
+  document.getElementById('ctrl-id').value=d.id;
+  document.getElementById('ctrl-fecha').value=d.fecha||'';
+  document.getElementById('ctrl-pn').value=d.numero_pieza||'';
+  document.getElementById('ctrl-supplier-name').value=d.proveedor_nombre||'';
+  document.getElementById('ctrl-largo').value=d.largo||'';
+  document.getElementById('ctrl-ancho').value=d.ancho||'';
+  document.getElementById('ctrl-alto').value=d.alto||'';
+  document.getElementById('ctrl-qty').value=d.qty_por_caja||'';
+  document.getElementById('ctrl-notas').value=d.notas||'';
+  ['cerrada','abierta','etiqueta'].forEach(k=>{
+    const src=d[`img_${k}`];
+    if(src){const img=document.getElementById(`prev-ctrl-${k}`);img.src=src;img.style.display='block';document.getElementById(`rm-ctrl-${k}`).classList.add('visible');}
+  });
+}
+
+async function viewControl(id){
+  const d=await fetch(`${API}/control/${id}`,{credentials:'include'}).then(r=>r.json()).catch(()=>null);
+  if(!d){toast('Error al cargar',false);return;}
+  const imgBox=(src,lbl)=>src&&src.length>10
+    ?`<div class="riai-imgbox" style="cursor:zoom-in" onclick="openLightbox('${src}')"><img src="${src}" alt="${lbl}"></div>`
+    :`<div class="riai-imgbox">${lbl}</div>`;
+  const html=`<div class="riai-doc">
+    <table>
+      <tr><td colspan="4" class="riai-sec">CONTROL DE EMBALAJE</td></tr>
+      <tr>
+        <td><span class="riai-lbl">Fecha</span><span class="riai-val">${d.fecha||'—'}</span></td>
+        <td><span class="riai-lbl">N° de Pieza</span><span class="riai-val">${d.numero_pieza||'—'}</span></td>
+        <td colspan="2"><span class="riai-lbl">Proveedor</span><span class="riai-val">${d.proveedor_nombre||'—'}</span></td>
+      </tr>
+      <tr>
+        <td><span class="riai-lbl">Largo (mm)</span><span class="riai-val">${d.largo||'—'}</span></td>
+        <td><span class="riai-lbl">Ancho (mm)</span><span class="riai-val">${d.ancho||'—'}</span></td>
+        <td><span class="riai-lbl">Alto (mm)</span><span class="riai-val">${d.alto||'—'}</span></td>
+        <td><span class="riai-lbl">Qty/caja</span><span class="riai-val">${d.qty_por_caja||'—'}</span></td>
+      </tr>
+      ${d.notas?`<tr><td colspan="4"><span class="riai-lbl">Notas</span><span class="riai-val">${d.notas}</span></td></tr>`:''}
+      <tr><td colspan="4" class="riai-sec">IMÁGENES</td></tr>
+      <tr>
+        <td colspan="2">${imgBox(d.img_cerrada,'Caja cerrada')}</td>
+        <td colspan="2">${imgBox(d.img_abierta,'Caja abierta')}</td>
+      </tr>
+      <tr><td colspan="4">${imgBox(d.img_etiqueta,'Etiqueta proveedor')}</td></tr>
+    </table>
+  </div>`;
+  document.getElementById('riai-preview-content').innerHTML=html;
+  document.getElementById('modal-preview').classList.add('open');
+}
+
+async function deleteControl(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  const res=await fetch(`${API}/control/${id}`,{method:'DELETE',credentials:'include'}).catch(()=>null);
+  if(res?.ok){toast('Registro eliminado');loadControl();}
+  else toast('Error al eliminar',false);
 }
 
 // ── IMPORT EXCEL ──────────────────────────────────────────────────────────
