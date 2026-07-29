@@ -33,6 +33,23 @@ def init_db():
         descripcion     TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS control (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        fecha           TEXT DEFAULT (date('now','localtime')),
+        numero_pieza    TEXT NOT NULL,
+        proveedor_nombre TEXT,
+        proveedor_codigo TEXT,
+        largo           REAL,
+        ancho           REAL,
+        alto            REAL,
+        qty_por_caja    INTEGER,
+        img_cerrada     TEXT,
+        img_abierta     TEXT,
+        img_etiqueta    TEXT,
+        notas           TEXT,
+        creado_en       TEXT DEFAULT (datetime('now','localtime'))
+    );
+
     CREATE TABLE IF NOT EXISTS riai (
         id              INTEGER PRIMARY KEY AUTOINCREMENT,
         fecha           TEXT,
@@ -121,7 +138,7 @@ def init_db():
             ("HID004","Hidráulica Córdoba S.A.","Av. Fuerza Aérea 3500, Córdoba","Ana Torres","atorres@hidraulicacba.com.ar","+54 351 460-3456"),
         ])
 
-    c.execute("SELECT COUNT(*) FROM piezas") 
+    c.execute("SELECT COUNT(*) FROM piezas")
     if c.fetchone()[0] == 0:
         c.executemany("INSERT INTO piezas VALUES (?,?)", [
             ("84567890","BRACKET SOPORTE MOTOR"),
