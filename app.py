@@ -230,6 +230,69 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
+# ── ANÁLISIS DE SATURACIÓN (Gemini) ──────────────────────────────────────
+@app.route("/api/analizar-saturacion", methods=["POST"])
+@login_required
+def analizar_saturacion():
+    import base64, re, urllib.request, json as json_lib
+    d = request.json
+    img_b64 = d.get("imagen", "")
+    if not img_b64:
+        return jsonify({"error": "No se recibió imagen"}), 400
+
+    match = re.search(r'base64,(.*)', img_b64)
+    if not match:
+        return jsonify({"error": "Formato de imagen inválido"}), 400
+    raw_b64 = match.group(1)
+
+    media_type = "image/jpeg"
+    if "png" in img_b64[:30]: media_type = "image/png"
+    elif "webp" in img_b64[:30]: media_type = "image/webp"
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": "GEMINI_API_KEY no configurada"}), 500
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+    payload = {
+        "contents": [{
+            "parts": [
+                {
+                    "inline_data": {
+                        "mime_type": media_type,
+                        "data": raw_b64
+                    }
+                },
+                {
+                    "text": """Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro.
+Estimá el nivel de saturación/llenado de la caja como porcentaje (0% = vacía, 100% = completamente llena).
+Respondé ÚNICAMENTE con un número entero entre 0 y 100, sin texto adicional, sin el símbolo %.
+Ejemplo de respuesta válida: 75"""
+                }
+            ]
+        }],
+        "generationConfig": {"maxOutputTokens": 10}
+    }
+
+    try:
+        req = urllib.request.Request(
+            url,
+            data=json_lib.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json_lib.loads(resp.read().decode())
+        texto = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+        num = re.search(r'\d+', texto)
+        if num:
+            pct = min(100, max(0, int(num.group())))
+            return jsonify({"saturacion": pct})
+        return jsonify({"error": "No se pudo determinar el nivel"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # ── CONTROL ───────────────────────────────────────────────────────────────
 @app.route("/api/control")
 @login_required
