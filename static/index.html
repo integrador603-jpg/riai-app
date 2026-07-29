@@ -506,6 +506,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="fld"><label>Ancho (mm)</label><input type="number" id="ctrl-ancho" placeholder="0"></div>
       <div class="fld"><label>Alto (mm)</label><input type="number" id="ctrl-alto" placeholder="0"></div>
       <div class="fld"><label>Cantidad piezas por caja</label><input type="number" id="ctrl-qty" placeholder="0"></div>
+      <div class="fld">
+        <label>Nivel de saturación</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <div style="flex:1;background:#eee;border-radius:20px;height:20px;overflow:hidden">
+            <div id="ctrl-sat-bar" style="height:100%;width:0%;background:#27ae60;border-radius:20px;transition:width .5s"></div>
+          </div>
+          <div id="ctrl-sat-pct" style="font-size:13px;font-weight:700;color:#555;min-width:40px">—</div>
+        </div>
+        <div class="auto-tag" id="ctrl-sat-status">Se calcula al subir la foto de caja abierta</div>
+      </div>
       <div class="fld s2"><label>Notas</label><input type="text" id="ctrl-notas" placeholder="Observaciones..."></div>
     </div>
 
@@ -1279,8 +1289,41 @@ function previewCtrlImg(input,key){
     const img=document.getElementById(`prev-ctrl-${key}`);
     img.src=e.target.result;img.style.display='block';
     document.getElementById(`rm-ctrl-${key}`).classList.add('visible');
+    if(key==='abierta') analizarSaturacion(e.target.result);
   };
   r.readAsDataURL(f);
+}
+
+async function analizarSaturacion(imgSrc){
+  const bar=document.getElementById('ctrl-sat-bar');
+  const pct=document.getElementById('ctrl-sat-pct');
+  const status=document.getElementById('ctrl-sat-status');
+  pct.textContent='...';
+  status.textContent='Analizando imagen...';
+  bar.style.width='0%';
+  try{
+    const res=await fetch(`${API}/analizar-saturacion`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body:JSON.stringify({imagen:imgSrc})
+    });
+    const data=await res.json();
+    if(data.saturacion!==undefined){
+      const v=data.saturacion;
+      bar.style.width=v+'%';
+      bar.style.background=v>=80?'#27ae60':v>=50?'#f39c12':'#e74c3c';
+      pct.textContent=v+'%';
+      pct.style.color=v>=80?'#27ae60':v>=50?'#f39c12':'#e74c3c';
+      status.textContent=v>=80?'Saturación óptima':v>=50?'Saturación media':'Saturación baja — revisar cantidad';
+    }else{
+      pct.textContent='—';
+      status.textContent='No se pudo analizar: '+(data.error||'error desconocido');
+    }
+  }catch(e){
+    pct.textContent='—';
+    status.textContent='Error de conexión';
+  }
 }
 function removeCtrlImg(key){
   const img=document.getElementById(`prev-ctrl-${key}`);
