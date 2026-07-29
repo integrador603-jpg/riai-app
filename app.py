@@ -230,6 +230,91 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
+# ── CONTROL ───────────────────────────────────────────────────────────────
+@app.route("/api/control")
+@login_required
+def list_control():
+    q = request.args.get("q", "").lower()
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT id, fecha, numero_pieza, proveedor_nombre,
+               largo, ancho, alto, qty_por_caja, creado_en
+        FROM control
+        WHERE LOWER(numero_pieza) LIKE ?
+           OR LOWER(proveedor_nombre) LIKE ?
+        ORDER BY id DESC
+    """, (f"%{q}%", f"%{q}%")).fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route("/api/control/<int:id>")
+@login_required
+def get_control(id):
+    conn = get_conn()
+    row = conn.execute("SELECT * FROM control WHERE id=?", (id,)).fetchone()
+    conn.close()
+    return jsonify(dict(row)) if row else ("Not found", 404)
+
+@app.route("/api/control", methods=["POST"])
+@require_role("admin", "operador")
+def create_control():
+    d = request.json
+    conn = get_conn()
+    cur = conn.execute("""
+        INSERT INTO control (
+            fecha, numero_pieza, proveedor_nombre, proveedor_codigo,
+            largo, ancho, alto, qty_por_caja,
+            img_cerrada, img_abierta, img_etiqueta, notas
+        ) VALUES (
+            :fecha, :numero_pieza, :proveedor_nombre, :proveedor_codigo,
+            :largo, :ancho, :alto, :qty_por_caja,
+            :img_cerrada, :img_abierta, :img_etiqueta, :notas
+        )
+    """, d)
+    conn.commit()
+    new_id = cur.lastrowid
+    conn.close()
+    return jsonify({"id": new_id, "status": "ok"}), 201
+
+@app.route("/api/control/<int:id>", methods=["PUT"])
+@require_role("admin", "operador")
+def update_control(id):
+    d = request.json
+    d["id"] = id
+    conn = get_conn()
+    conn.execute("""
+        UPDATE control SET
+            fecha=:fecha, numero_pieza=:numero_pieza,
+            proveedor_nombre=:proveedor_nombre, proveedor_codigo=:proveedor_codigo,
+            largo=:largo, ancho=:ancho, alto=:alto, qty_por_caja=:qty_por_caja,
+            img_cerrada=:img_cerrada, img_abierta=:img_abierta,
+            img_etiqueta=:img_etiqueta, notas=:notas
+        WHERE id=:id
+    """, d)
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+@app.route("/api/control/<int:id>", methods=["DELETE"])
+@require_role("admin")
+def delete_control(id):
+    conn = get_conn()
+    conn.execute("DELETE FROM control WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+@app.route("/api/control/por-pn/<pn>")
+@login_required
+def control_por_pn(pn):
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT id, fecha, proveedor_nombre, largo, ancho, alto, qty_por_caja
+        FROM control WHERE numero_pieza=? ORDER BY id DESC
+    """, (pn,)).fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
 # ── PDF ───────────────────────────────────────────────────────────────────
 @app.route("/api/riai/<int:id>/pdf")
 @login_required
