@@ -253,7 +253,7 @@ def analizar_saturacion():
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY no configurada"}), 500
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    rl = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
 
     payload = {
         "contents": [{
