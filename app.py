@@ -249,7 +249,7 @@ def analizar_saturacion():
     if "png" in img_b64[:30]: media_type = "image/png"
     elif "webp" in img_b64[:30]: media_type = "image/webp"
 
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("GAQ.Ab8RN6Lxp2OO3d9hlNhHTH94_gyj2y0851sXpx2AtGF4adtn_w", "")
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY no configurada"}), 500
 
