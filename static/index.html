@@ -558,7 +558,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="sat-bar-bg"><div id="ctrl-sat-bar" class="sat-bar-fill" style="width:0%;background:var(--rojo)"></div></div>
           <div id="ctrl-sat-pct" class="sat-pct" style="color:var(--texto-suave)">—</div>
         </div>
-        <div class="auto-tag" id="ctrl-sat-status">Se calcula al subir la foto de caja abierta</div>
+        <div class="auto-tag" id="ctrl-sat-status">Se calculará automáticamente después de guardar</div>
       </div>
       <div class="fld"><label>Notas</label><input type="text" id="ctrl-notas" placeholder="Observaciones..."></div>
     </div>
@@ -1259,7 +1259,7 @@ function setSatUI(val){
   const status=document.getElementById('ctrl-sat-status');
   if(val===null||val===undefined){
     bar.style.width='0%';pct.textContent='—';pct.style.color='var(--texto-suave)';
-    status.textContent='Se calcula al subir la foto de caja abierta';
+    status.textContent='Se calculará automáticamente después de guardar';
     return;
   }
   const color=val>=80?'var(--verde)':val>=50?'var(--naranja)':'var(--rojo)';
@@ -1275,7 +1275,6 @@ function previewCtrlImg(input,key){
     const img=document.getElementById(`prev-ctrl-${key}`);
     img.src=e.target.result;img.style.display='block';
     document.getElementById(`rm-ctrl-${key}`).classList.add('visible');
-    if(key==='abierta') analizarSaturacion(e.target.result);
   };
   r.readAsDataURL(f);
 }
@@ -1344,14 +1343,13 @@ async function saveControl(){
   const gi=id=>{const el=document.getElementById(id);return el?.src&&el.src.length>10?el.src:null;};
   const suppName=g('ctrl-supplier-name');
   const suppCod=ctrlSuppCache.find(x=>x.nombre===suppName)?.codigo||'';
-  const satPct=document.getElementById('ctrl-sat-pct').textContent;
-  const saturacion=satPct&&satPct!=='—'&&satPct!=='...'?parseInt(satPct):null;
+  const imgAbierta=gi('prev-ctrl-abierta');
   const d={
     fecha:g('ctrl-fecha'),numero_pieza:g('ctrl-pn'),
     proveedor_nombre:suppName,proveedor_codigo:suppCod,
     largo:g('ctrl-largo')||null,ancho:g('ctrl-ancho')||null,alto:g('ctrl-alto')||null,
-    qty_por_caja:g('ctrl-qty')||null,saturacion,notas:g('ctrl-notas'),
-    img_cerrada:gi('prev-ctrl-cerrada'),img_abierta:gi('prev-ctrl-abierta'),img_etiqueta:gi('prev-ctrl-etiqueta'),
+    qty_por_caja:g('ctrl-qty')||null,saturacion:null,notas:g('ctrl-notas'),
+    img_cerrada:gi('prev-ctrl-cerrada'),img_abierta:imgAbierta,img_etiqueta:gi('prev-ctrl-etiqueta'),
   };
   if(!d.numero_pieza){toast('Ingresá el PN.',false);return;}
   const id=document.getElementById('ctrl-id').value;
@@ -1360,10 +1358,38 @@ async function saveControl(){
   try{
     const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(d)});
     if(res.ok||res.status===201){
+      const result=await res.json();
+      const savedId=result.id||id;
       toast(id?'Registro actualizado':'Registro guardado');
-      toggleCtrlForm(false);loadControl();
+      toggleCtrlForm(false);
+      loadControl();
+      // Análisis automático en segundo plano, después de guardar
+      if(imgAbierta && savedId) analizarEnSegundoPlano(savedId, imgAbierta, {...d, id:savedId});
     }else toast('Error al guardar.',false);
   }catch(e){toast('Error de conexión.',false);}
+}
+
+async function analizarEnSegundoPlano(id, imgSrc, registroCompleto){
+  try{
+    const res=await fetch(`${API}/analizar-saturacion`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      credentials:'include',body:JSON.stringify({imagen:imgSrc})
+    });
+    const data=await res.json();
+    if(data.saturacion!==undefined){
+      await fetch(`${API}/control/${id}`,{
+        method:'PUT',headers:{'Content-Type':'application/json'},
+        credentials:'include',body:JSON.stringify({...registroCompleto, saturacion:data.saturacion})
+      });
+      toast(`Saturación calculada: ${data.saturacion}%`);
+      loadControl(document.getElementById('ctrl-search')?.value||'');
+      if(document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
+    }else{
+      toast('No se pudo calcular la saturación: '+(data.error||'error'),false);
+    }
+  }catch(e){
+    toast('Error al analizar saturación',false);
+  }
 }
 
 async function editControl(id){
