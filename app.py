@@ -231,7 +231,6 @@ def delete_riai(id):
     return jsonify({"status": "ok"})
 
 # ── ANÁLISIS DE SATURACIÓN (Gemini) ──────────────────────────────────────
-# ── ANÁLISIS DE SATURACIÓN (Gemini) ──────────────────────────────────────
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
@@ -252,7 +251,7 @@ def analizar_saturacion():
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY no configurada en el servidor"}), 500
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
 
     payload = {
         "contents": [{
