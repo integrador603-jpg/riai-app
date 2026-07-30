@@ -231,13 +231,10 @@ def delete_riai(id):
     return jsonify({"status": "ok"})
 
 # ── ANÁLISIS DE SATURACIÓN (Gemini) ──────────────────────────────────────
-from google import genai
-from google.genai import types
-
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
-    import base64, re
+    import base64, re, urllib.request, json as json_lib
     d = request.json
     img_b64 = d.get("imagen", "")
     if not img_b64:
@@ -256,34 +253,43 @@ def analizar_saturacion():
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY no configurada"}), 500
 
-    try:
-        client = genai.Client(api_key=api_key.strip())
-        
-        prompt = """Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro.
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+    payload = {
+        "contents": [{
+            "parts": [
+                {
+                    "inline_data": {
+                        "mime_type": media_type,
+                        "data": raw_b64
+                    }
+                },
+                {
+                    "text": """Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro.
 Estimá el nivel de saturación/llenado de la caja como porcentaje (0% = vacía, 100% = completamente llena).
 Respondé ÚNICAMENTE con un número entero entre 0 y 100, sin texto adicional, sin el símbolo %.
 Ejemplo de respuesta válida: 75"""
-
-        image_bytes = base64.b64decode(raw_b64)
-
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[
-                types.Part.from_bytes(
-                    data=image_bytes,
-                    mime_type=media_type,
-                ),
-                prompt
+                }
             ]
-        )
+        }],
+        "generationConfig": {"maxOutputTokens": 10}
+    }
 
-        texto = response.text.strip()
+    try:
+        req = urllib.request.Request(
+            url,
+            data=json_lib.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json_lib.loads(resp.read().decode())
+        texto = result["candidates"][0]["content"]["parts"][0]["text"].strip()
         num = re.search(r'\d+', texto)
         if num:
             pct = min(100, max(0, int(num.group())))
             return jsonify({"saturacion": pct})
         return jsonify({"error": "No se pudo determinar el nivel"}), 400
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
