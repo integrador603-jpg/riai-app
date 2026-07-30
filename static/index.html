@@ -583,7 +583,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="img-upload-text">Seleccionar imagen</div>
           <img id="prev-ctrl-abierta" class="img-preview">
         </div>
-        <input type="file" id="up-ctrl-abierta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'abierta')">
+        <input type="file" id="up-ctrl-abierta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'abierta')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Etiqueta del proveedor</div>
@@ -593,7 +593,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="img-upload-text">Seleccionar imagen</div>
           <img id="prev-ctrl-etiqueta" class="img-preview">
         </div>
-        <input type="file" id="up-ctrl-etiqueta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
+        <input type="file" id="up-ctrl-etiqueta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
       </div>
     </div>
 
@@ -807,7 +807,7 @@ async function loadDashboard(){
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
 
-  // Gráfico barras — PNs relevados por día (últimos 14 días)
+  // Gráfico barras — PNs relevados por día (últimos 14 días), basado en Control
   const days = 14;
   const counts = {};
   const today = new Date();
@@ -815,8 +815,8 @@ async function loadDashboard(){
     const d=new Date(today); d.setDate(d.getDate()-i);
     counts[d.toISOString().split('T')[0]] = 0;
   }
-  riaiRows.forEach(r=>{
-    const d=r.creado_en?.split(' ')[0]||r.fecha;
+  ctrlRows.forEach(r=>{
+    const d=(r.fecha||r.creado_en||'').split(' ')[0];
     if(d && counts[d]!==undefined) counts[d]++;
   });
   const labels=Object.keys(counts);
