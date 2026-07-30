@@ -573,7 +573,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="img-upload-text">Seleccionar imagen</div>
           <img id="prev-ctrl-cerrada" class="img-preview">
         </div>
-        <input type="file" id="up-ctrl-cerrada" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'cerrada')">
+        <input type="file" id="up-ctrl-cerrada" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'cerrada')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Caja abierta</div>
