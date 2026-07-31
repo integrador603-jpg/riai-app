@@ -230,80 +230,76 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
-# ── ANÁLISIS DE SATURACIÓN (Gemini) ──────────────────────────────────────
+# ── ANÁLISIS DE SATURACIÓN (Hugging Face) ────────────────────────────────
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
-    import base64, re, urllib.request, json as json_lib, urllib.error
-    d = request.json or {}
+    import re, urllib.request, json as json_lib
+
+    d = request.json
     img_b64 = d.get("imagen", "")
     if not img_b64:
         return jsonify({"error": "No se recibió imagen"}), 400
 
     match = re.search(r'base64,(.*)', img_b64)
-    raw_b64 = match.group(1) if match else img_b64
+    if not match:
+        return jsonify({"error": "Formato de imagen inválido"}), 400
+    raw_b64 = match.group(1)
 
-    media_type = "image/jpeg"
-    if "png" in img_b64[:30]: media_type = "image/png"
-    elif "webp" in img_b64[:30]: media_type = "image/webp"
-
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    api_key = os.environ.get("HF_API_KEY", "")
     if not api_key:
-        return jsonify({"error": "GEMINI_API_KEY no configurada en el servidor"}), 500
+        return jsonify({"error": "HF_API_KEY no configurada"}), 500
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    # Usamos un modelo VLM (vision-language) vía el router de HF, compatible con formato OpenAI
+    url = "https://router.huggingface.co/v1/chat/completions"
 
     payload = {
-        "contents": [{
-            "parts": [
+        "model": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+        "messages": [{
+            "role": "user",
+            "content": [
                 {
-                    "inline_data": {
-                        "mime_type": media_type,
-                        "data": raw_b64
-                    }
+                    "type": "text",
+                    "text": """Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro.
+Estimá el nivel de saturación/llenado de la caja como porcentaje (0 = vacía, 100 = completamente llena).
+Respondé ÚNICAMENTE con un número entero entre 0 y 100, sin texto adicional, sin el símbolo %.
+Ejemplo de respuesta válida: 75"""
                 },
                 {
-                    "text": "Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro. Estimá el nivel de saturación/llenado de la caja como porcentaje (0% = vacía, 100% = completamente llena). Respondé ÚNICAMENTE con un número entero entre 0 y 100, sin texto adicional, sin el símbolo %."
+                    "type": "image_url",
+                    "image_url": {"url": img_b64}
                 }
             ]
         }],
-        "generationConfig": {"maxOutputTokens": 10}
+        "max_tokens": 10
     }
 
     try:
         req = urllib.request.Request(
             url,
-            data=json_lib.dumps(payload).encode('utf-8'),
-            headers={"Content-Type": "application/json"},
+            data=json_lib.dumps(payload).encode(),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            },
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json_lib.loads(resp.read().decode('utf-8'))
-
-        # Extraer texto de forma segura
-        candidates = result.get("candidates", [])
-        if not candidates:
-            return jsonify({"error": "Google API no devolvió candidatos", "raw": result}), 500
-
-        parts = candidates[0].get("content", {}).get("parts", [])
-        if not parts:
-            return jsonify({"error": "Respuesta vacía de la API"}), 500
-
-        texto = parts[0].get("text", "").strip()
+        with urllib.request.urlopen(req, timeout=40) as resp:
+            result = json_lib.loads(resp.read().decode())
+        texto = result["choices"][0]["message"]["content"].strip()
         num = re.search(r'\d+', texto)
         if num:
             pct = min(100, max(0, int(num.group())))
             return jsonify({"saturacion": pct})
-        return jsonify({"error": f"No se encontró un número en la respuesta: '{texto}'"}), 400
-
+        return jsonify({"error": f"No se pudo determinar el nivel. Respuesta: {texto}"}), 400
     except urllib.error.HTTPError as e:
-        error_body = e.read().decode('utf-8')
-        print("❌ Error de API de Google HTTP:", e.code, error_body)
-        return jsonify({"error": f"Error de Google API ({e.code}): {error_body}"}), 500
+        error_body = e.read().decode()
+        print(f"HF HTTPError {e.code}: {error_body}", flush=True)
+        return jsonify({"error": f"Error de Hugging Face ({e.code}): {error_body}"}), 500
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        print(f"HF Exception: {repr(e)}", flush=True)
         return jsonify({"error": str(e)}), 500
+
 # ── CONTROL ───────────────────────────────────────────────────────────────
 @app.route("/api/control")
 @login_required
@@ -337,11 +333,11 @@ def create_control():
     cur = conn.execute("""
         INSERT INTO control (
             fecha, numero_pieza, proveedor_nombre, proveedor_codigo,
-            largo, ancho, alto, qty_por_caja,
+            largo, ancho, alto, qty_por_caja, saturacion,
             img_cerrada, img_abierta, img_etiqueta, notas
         ) VALUES (
             :fecha, :numero_pieza, :proveedor_nombre, :proveedor_codigo,
-            :largo, :ancho, :alto, :qty_por_caja,
+            :largo, :ancho, :alto, :qty_por_caja, :saturacion,
             :img_cerrada, :img_abierta, :img_etiqueta, :notas
         )
     """, d)
@@ -361,6 +357,7 @@ def update_control(id):
             fecha=:fecha, numero_pieza=:numero_pieza,
             proveedor_nombre=:proveedor_nombre, proveedor_codigo=:proveedor_codigo,
             largo=:largo, ancho=:ancho, alto=:alto, qty_por_caja=:qty_por_caja,
+            saturacion=:saturacion,
             img_cerrada=:img_cerrada, img_abierta=:img_abierta,
             img_etiqueta=:img_etiqueta, notas=:notas
         WHERE id=:id
