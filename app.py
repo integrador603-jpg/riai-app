@@ -300,8 +300,10 @@ Ejemplo de respuesta válida: 75"""
         return jsonify({"error": "No se pudo determinar el nivel"}), 400
     except urllib.error.HTTPError as e:
         error_body = e.read().decode()
+        print(f"GROQ HTTPError {e.code}: {error_body}", flush=True)
         return jsonify({"error": f"Error de Groq API ({e.code}): {error_body}"}), 500
     except Exception as e:
+        print(f"GROQ Exception: {repr(e)}", flush=True)
         return jsonify({"error": str(e)}), 500
 
 # ── CONTROL ───────────────────────────────────────────────────────────────
