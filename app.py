@@ -254,7 +254,7 @@ def analizar_saturacion():
     url = "https://router.huggingface.co/v1/chat/completions"
 
     payload = {
-        "model": "Qwen/Qwen2.5-VL-7B-Instruct:novita",
+        "model": "Qwen/Qwen2.5-VL-7B-Instruct",
         "messages": [{
             "role": "user",
             "content": [
