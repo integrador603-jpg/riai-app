@@ -230,7 +230,7 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
-# ── ANÁLISIS DE SATURACIÓN (Groq) ────────────────────────────────────────
+# ── ANÁLISIS DE SATURACIÓN (Hugging Face) ────────────────────────────────
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
@@ -246,18 +246,15 @@ def analizar_saturacion():
         return jsonify({"error": "Formato de imagen inválido"}), 400
     raw_b64 = match.group(1)
 
-    media_type = "image/jpeg"
-    if "png" in img_b64[:30]: media_type = "image/png"
-    elif "webp" in img_b64[:30]: media_type = "image/webp"
-
-    api_key = os.environ.get("GROQ_API_KEY", "")
+    api_key = os.environ.get("HF_API_KEY", "")
     if not api_key:
-        return jsonify({"error": "GROQ_API_KEY no configurada"}), 500
+        return jsonify({"error": "HF_API_KEY no configurada"}), 500
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
+    # Usamos un modelo VLM (vision-language) vía el router de HF, compatible con formato OpenAI
+    url = "https://router.huggingface.co/v1/chat/completions"
 
     payload = {
-        "model": "llama-3.2-90b-vision-preview",
+        "model": "Qwen/Qwen2.5-VL-7B-Instruct:novita",
         "messages": [{
             "role": "user",
             "content": [
@@ -270,14 +267,11 @@ Ejemplo de respuesta válida: 75"""
                 },
                 {
                     "type": "image_url",
-                    "image_url": {
-                        "url": f"data:{media_type};base64,{raw_b64}"
-                    }
+                    "image_url": {"url": img_b64}
                 }
             ]
         }],
-        "max_tokens": 10,
-        "temperature": 0
+        "max_tokens": 10
     }
 
     try:
@@ -290,20 +284,20 @@ Ejemplo de respuesta válida: 75"""
             },
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=40) as resp:
             result = json_lib.loads(resp.read().decode())
         texto = result["choices"][0]["message"]["content"].strip()
         num = re.search(r'\d+', texto)
         if num:
             pct = min(100, max(0, int(num.group())))
             return jsonify({"saturacion": pct})
-        return jsonify({"error": "No se pudo determinar el nivel"}), 400
+        return jsonify({"error": f"No se pudo determinar el nivel. Respuesta: {texto}"}), 400
     except urllib.error.HTTPError as e:
         error_body = e.read().decode()
-        print(f"GROQ HTTPError {e.code}: {error_body}", flush=True)
-        return jsonify({"error": f"Error de Groq API ({e.code}): {error_body}"}), 500
+        print(f"HF HTTPError {e.code}: {error_body}", flush=True)
+        return jsonify({"error": f"Error de Hugging Face ({e.code}): {error_body}"}), 500
     except Exception as e:
-        print(f"GROQ Exception: {repr(e)}", flush=True)
+        print(f"HF Exception: {repr(e)}", flush=True)
         return jsonify({"error": str(e)}), 500
 
 # ── CONTROL ───────────────────────────────────────────────────────────────
