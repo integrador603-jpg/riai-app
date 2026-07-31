@@ -43,6 +43,7 @@ def init_db():
         ancho           REAL,
         alto            REAL,
         qty_por_caja    INTEGER,
+        saturacion      INTEGER,
         img_cerrada     TEXT,
         img_abierta     TEXT,
         img_etiqueta    TEXT,
@@ -149,4 +150,19 @@ def init_db():
         ])
 
     conn.commit()
+
+    # Migraciones: agregar columnas nuevas a tablas existentes sin perder datos
+    def add_column_if_missing(table, column, coltype):
+        cols = [r[1] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if column not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
+            conn.commit()
+
+    add_column_if_missing("control", "saturacion", "INTEGER")
+    add_column_if_missing("riai", "colocacion", "TEXT DEFAULT 'pallet'")
+    add_column_if_missing("riai", "p1_material", "TEXT")
+    add_column_if_missing("riai", "p1_cajas_capa", "INTEGER")
+    add_column_if_missing("riai", "p1_capas", "INTEGER")
+    add_column_if_missing("riai", "p2_material", "TEXT")
+
     conn.close()
