@@ -1,0 +1,1 @@
+web: pip uninstall -y opencv-python opencv-contrib-python 2>/dev/null; python -m gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
