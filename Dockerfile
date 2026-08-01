@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["python", "-m", "gunicorn", "app:app", "--bind", "0.0.0.0:8080", "--timeout", "120"]
+CMD python -m gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
