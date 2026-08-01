@@ -5,6 +5,16 @@ from auth import verify_user, create_user, init_default_admin, login_required, r
 from excel_io import export_riai_excel, export_proveedores_excel, import_riai_excel, import_proveedores_excel
 from pdf_generator import generate_riai_pdf
 import os
+import sys
+
+# ── FIX libGL en entornos sin GUI (Railway, servidores headless) ─────────
+# Evita que cv2 falle al importar por falta de librerías gráficas del sistema.
+os.environ.setdefault("OPENCV_IO_ENABLE_OPENEXR", "0")
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+try:
+    import cv2  # noqa
+except ImportError:
+    pass
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "static"))
 app.secret_key = os.environ.get("SECRET_KEY", "cnh-riai-secret-2026")
