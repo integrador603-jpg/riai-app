@@ -230,11 +230,11 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
-# ── ANÁLISIS DE SATURACIÓN (Hugging Face) ────────────────────────────────
+# ── ANÁLISIS DE SATURACIÓN (modelo propio, vía app_saturacion en Railway) ──
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
-    import re, urllib.request, json as json_lib
+    import re, base64, requests
 
     d = request.json
     img_b64 = d.get("imagen", "")
@@ -246,59 +246,35 @@ def analizar_saturacion():
         return jsonify({"error": "Formato de imagen inválido"}), 400
     raw_b64 = match.group(1)
 
-    api_key = os.environ.get("HF_API_KEY", "")
-    if not api_key:
-        return jsonify({"error": "HF_API_KEY no configurada"}), 500
-
-    # Usamos un modelo VLM (vision-language) vía el router de HF, compatible con formato OpenAI
-    url = "https://router.huggingface.co/v1/chat/completions"
-
-    payload = {
-        "model": "meta-llama/Llama-3.2-11B-Vision-Instruct",
-        "messages": [{
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": """Analizá esta imagen de una caja de embalaje industrial abierta con piezas adentro.
-Estimá el nivel de saturación/llenado de la caja como porcentaje (0 = vacía, 100 = completamente llena).
-Respondé ÚNICAMENTE con un número entero entre 0 y 100, sin texto adicional, sin el símbolo %.
-Ejemplo de respuesta válida: 75"""
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {"url": img_b64}
-                }
-            ]
-        }],
-        "max_tokens": 10
-    }
+    saturacion_api_url = os.environ.get("SATURACION_API_URL", "")
+    saturacion_api_key = os.environ.get("SATURACION_API_KEY", "")
+    if not saturacion_api_url:
+        return jsonify({"error": "SATURACION_API_URL no configurada"}), 500
 
     try:
-        req = urllib.request.Request(
-            url,
-            data=json_lib.dumps(payload).encode(),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
-            },
-            method="POST"
+        imagen_bytes = base64.b64decode(raw_b64)
+    except Exception:
+        return jsonify({"error": "No se pudo decodificar la imagen"}), 400
+
+    try:
+        resp = requests.post(
+            f"{saturacion_api_url.rstrip('/')}/api/saturacion",
+            files={"foto": ("foto.jpg", imagen_bytes, "image/jpeg")},
+            headers={"X-API-Key": saturacion_api_key} if saturacion_api_key else {},
+            timeout=40,
         )
-        with urllib.request.urlopen(req, timeout=40) as resp:
-            result = json_lib.loads(resp.read().decode())
-        texto = result["choices"][0]["message"]["content"].strip()
-        num = re.search(r'\d+', texto)
-        if num:
-            pct = min(100, max(0, int(num.group())))
-            return jsonify({"saturacion": pct})
-        return jsonify({"error": f"No se pudo determinar el nivel. Respuesta: {texto}"}), 400
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode()
-        print(f"HF HTTPError {e.code}: {error_body}", flush=True)
-        return jsonify({"error": f"Error de Hugging Face ({e.code}): {error_body}"}), 500
-    except Exception as e:
-        print(f"HF Exception: {repr(e)}", flush=True)
-        return jsonify({"error": str(e)}), 500
+        data = resp.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error llamando a app_saturacion: {repr(e)}", flush=True)
+        return jsonify({"error": f"No se pudo conectar con el servicio de análisis: {e}"}), 500
+    except ValueError:
+        return jsonify({"error": "Respuesta inválida del servicio de análisis"}), 500
+
+    if not data.get("ok"):
+        return jsonify({"error": data.get("detalle", "El modelo no pudo analizar la imagen")}), 400
+
+    pct = round(data["saturacion"])
+    return jsonify({"saturacion": pct})
 
 # ── CONTROL ───────────────────────────────────────────────────────────────
 @app.route("/api/control")
@@ -308,7 +284,9 @@ def list_control():
     conn = get_conn()
     rows = conn.execute("""
         SELECT id, fecha, numero_pieza, proveedor_nombre,
-               largo, ancho, alto, qty_por_caja, creado_en
+               largo, ancho, alto, qty_por_caja, saturacion,
+               (img_abierta IS NOT NULL AND img_abierta != '') AS tiene_img_abierta,
+               creado_en
         FROM control
         WHERE LOWER(numero_pieza) LIKE ?
            OR LOWER(proveedor_nombre) LIKE ?
