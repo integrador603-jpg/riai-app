@@ -247,6 +247,8 @@ def analizar_saturacion():
     raw_b64 = match.group(1)
 
     saturacion_api_url = os.environ.get("SATURACION_API_URL", "")
+    if saturacion_api_url and not saturacion_api_url.startswith(("http://", "https://")):
+        saturacion_api_url = f"https://{saturacion_api_url}"
     saturacion_api_key = os.environ.get("SATURACION_API_KEY", "")
     if not saturacion_api_url:
         return jsonify({"error": "SATURACION_API_URL no configurada"}), 500
@@ -256,19 +258,48 @@ def analizar_saturacion():
     except Exception:
         return jsonify({"error": "No se pudo decodificar la imagen"}), 400
 
-    try:
-        resp = requests.post(
+    def _llamar_api_saturacion():
+        return requests.post(
             f"{saturacion_api_url.rstrip('/')}/api/saturacion",
             files={"foto": ("foto.jpg", imagen_bytes, "image/jpeg")},
             headers={"X-API-Key": saturacion_api_key} if saturacion_api_key else {},
             timeout=40,
         )
-        data = resp.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error llamando a app_saturacion: {repr(e)}", flush=True)
-        return jsonify({"error": f"No se pudo conectar con el servicio de análisis: {e}"}), 500
-    except ValueError:
-        return jsonify({"error": "Respuesta inválida del servicio de análisis"}), 500
+
+    import time
+    data = None
+    ultimo_error = None
+    # hasta 2 intentos: el servicio de saturación puede tardar en "despertar"
+    # (cold start) si estuvo un rato sin uso, y la primera petición se pierde
+    for intento in range(2):
+        resp = None
+        try:
+            resp = _llamar_api_saturacion()
+        except requests.exceptions.RequestException as e:
+            ultimo_error = f"No se pudo conectar con el servicio de análisis: {e}"
+            print(f"Error de conexión a app_saturacion (intento {intento + 1}): {repr(e)}", flush=True)
+
+        if resp is not None:
+            try:
+                data = resp.json()
+                break
+            except ValueError:
+                # incluye requests.exceptions.JSONDecodeError, que hereda de
+                # RequestException Y de ValueError -- por eso este bloque va
+                # SEPARADO del try de arriba, si no el except de conexión se
+                # lo come primero y perdemos el detalle real del problema
+                ultimo_error = (
+                    f"El servicio de análisis respondió algo inesperado (status {resp.status_code}). "
+                    f"Puede estar caído o reiniciándose."
+                )
+                print(f"Respuesta no-JSON de app_saturacion (intento {intento + 1}). "
+                      f"Status: {resp.status_code}. Body: {resp.text[:300]!r}", flush=True)
+
+        if intento == 0:
+            time.sleep(3)  # le da tiempo al contenedor a terminar de levantar
+
+    if data is None:
+        return jsonify({"error": ultimo_error}), 502
 
     if not data.get("ok"):
         return jsonify({"error": data.get("detalle", "El modelo no pudo analizar la imagen")}), 400
