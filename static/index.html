@@ -108,7 +108,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .toast-ok{background:var(--verde)}.toast-err{background:#e74c3c}
 
 /* Dashboard */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:20px}
 .stat-card{background:#fff;border-radius:8px;padding:20px;box-shadow:var(--sombra);border-left:4px solid var(--rojo);display:flex;align-items:center;gap:14px}
 .stat-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .stat-icon svg{width:22px;height:22px;fill:#fff}
@@ -118,7 +118,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .stat-icon-orange{background:var(--naranja)}
 .stat-num{font-size:26px;font-weight:800;color:var(--texto)}
 .stat-label{font-size:11px;color:var(--texto-suave);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+.charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.dash-ctrl-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.dash-ctrl-filters input,.dash-ctrl-filters select{padding:7px 10px;border:1px solid var(--borde);border-radius:6px;font-size:13px}
+.dash-ctrl-scroll{max-height:420px;overflow-y:auto;border:1px solid var(--borde);border-radius:8px}
+.dash-ctrl-scroll table{margin:0}
+.dash-ctrl-scroll thead th{position:sticky;top:0;background:#fff;z-index:1}
+.ranking-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.ranking-row:last-child{border-bottom:none}
+.ranking-badge{background:var(--gris);border-radius:10px;padding:2px 9px;font-weight:700;font-size:12px}
 .chart-box{background:#fff;border-radius:8px;box-shadow:var(--sombra);padding:20px}
 .chart-title{font-size:13px;font-weight:700;color:var(--texto);margin-bottom:16px}
 .chart-canvas{width:100%;height:200px;position:relative}
@@ -250,6 +258,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
       <div><div class="stat-num" id="stat-divergencia">—</div><div class="stat-label">PNs con divergencia</div></div>
     </div>
+    <div class="stat-card" style="border-left-color:#8e44ad">
+      <div class="stat-icon" style="background:#f4ecf9;color:#8e44ad"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 10h2v2H7v-2zm4-4h2v6h-2v-6zm4-3h2v9h-2V8z"/></svg></div>
+      <div><div class="stat-num" id="stat-sat-prom">—</div><div class="stat-label">Saturación promedio</div></div>
+    </div>
   </div>
 
   <div class="charts-row">
@@ -262,14 +274,33 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="chart-title">Divergencia RIAI vs Control</div>
       <div id="diverg-list" style="font-size:13px"></div>
     </div>
+    <div class="chart-box">
+      <div class="chart-title">Ranking de proveedores (PNs relevados)</div>
+      <div id="ranking-proveedores-list" style="font-size:13px"></div>
+    </div>
   </div>
 
   <div class="card">
-    <div class="card-header">Últimos registros de control</div>
-    <table class="data-table">
-      <thead><tr><th>Fecha</th><th>PN</th><th>Proveedor</th><th>Dimensiones</th><th>Qty/caja</th><th>Saturación</th></tr></thead>
-      <tbody id="dash-ctrl-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Cargando...</td></tr></tbody>
-    </table>
+    <div class="card-header">Registros de control</div>
+    <div class="dash-ctrl-filters">
+      <input type="date" id="dash-f-fecha" title="Filtrar por fecha" onchange="renderDashCtrl()">
+      <input type="text" id="dash-f-pn" placeholder="Filtrar por PN" oninput="renderDashCtrl()">
+      <input type="text" id="dash-f-proveedor" placeholder="Filtrar por proveedor" oninput="renderDashCtrl()">
+      <select id="dash-f-sat" onchange="renderDashCtrl()">
+        <option value="">Saturación: todas</option>
+        <option value="alta">Alta (≥80%)</option>
+        <option value="media">Media (50-79%)</option>
+        <option value="baja">Baja (&lt;50%)</option>
+        <option value="sin">Sin analizar</option>
+      </select>
+      <button class="btn btn-outline btn-xs" onclick="clearDashCtrlFilters()">Limpiar filtros</button>
+    </div>
+    <div class="dash-ctrl-scroll">
+      <table class="data-table">
+        <thead><tr><th>Fecha</th><th>PN</th><th>Proveedor</th><th>Dimensiones</th><th>Qty/caja</th><th>Saturación</th></tr></thead>
+        <tbody id="dash-ctrl-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Cargando...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -789,11 +820,22 @@ async function loadDashboard(){
     fetch(`${API}/control`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]),
   ]);
 
+  dashCtrlRowsAll = ctrlRows; // cache para los filtros de la tabla de abajo
+
   // Stats
   const pnUnicos = new Set(riaiRows.map(r=>r.numero_pieza).filter(Boolean)).size;
   document.getElementById('stat-total').textContent = riaiRows.length;
   document.getElementById('stat-pn-unicos').textContent = pnUnicos;
   document.getElementById('stat-controles').textContent = ctrlRows.length;
+
+  // Saturación promedio (solo sobre los registros que ya tienen valor calculado)
+  const conSaturacion = ctrlRows.filter(r=>r.saturacion!==null && r.saturacion!==undefined);
+  if(conSaturacion.length){
+    const promedio = conSaturacion.reduce((acc,r)=>acc+r.saturacion,0)/conSaturacion.length;
+    document.getElementById('stat-sat-prom').textContent = Math.round(promedio)+'%';
+  } else {
+    document.getElementById('stat-sat-prom').textContent = '—';
+  }
 
   // Divergencia: PNs en control que difieren en dimensiones respecto al RIAI
   const riaiMap = {};
@@ -806,6 +848,28 @@ async function loadDashboard(){
     if(c.qty_por_caja && r.p1_capacidad && Math.abs(c.qty_por_caja - r.p1_capacidad) > 0) divergentes.add(c.numero_pieza);
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
+
+  // Ranking de proveedores: cantidad de PNs (únicos) relevados por proveedor, en RIAI
+  const porProveedor = {};
+  riaiRows.forEach(r=>{
+    const nombre = r.proveedor_nombre || 'Sin proveedor';
+    if(!porProveedor[nombre]) porProveedor[nombre] = new Set();
+    if(r.numero_pieza) porProveedor[nombre].add(r.numero_pieza);
+  });
+  const rankingEl = document.getElementById('ranking-proveedores-list');
+  const rankingArr = Object.entries(porProveedor)
+    .map(([nombre,pns])=>({nombre, cantidad:pns.size}))
+    .sort((a,b)=>b.cantidad-a.cantidad)
+    .slice(0,8);
+  if(!rankingArr.length){
+    rankingEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px 0">Sin datos todavía</div>';
+  } else {
+    rankingEl.innerHTML = rankingArr.map(p=>`
+      <div class="ranking-row">
+        <span>${p.nombre}</span>
+        <span class="ranking-badge">${p.cantidad} PN${p.cantidad!==1?'s':''}</span>
+      </div>`).join('');
+  }
 
   // Gráfico barras — PNs relevados por día (últimos 14 días), basado en Control
   const days = 14;
@@ -843,11 +907,45 @@ async function loadDashboard(){
       </div>`).join('');
   }
 
-  // Últimos controles
+  renderDashCtrl();
+}
+
+let dashCtrlRowsAll = [];
+
+function clearDashCtrlFilters(){
+  document.getElementById('dash-f-fecha').value='';
+  document.getElementById('dash-f-pn').value='';
+  document.getElementById('dash-f-proveedor').value='';
+  document.getElementById('dash-f-sat').value='';
+  renderDashCtrl();
+}
+
+function renderDashCtrl(){
+  const fFecha = document.getElementById('dash-f-fecha')?.value || '';
+  const fPn = (document.getElementById('dash-f-pn')?.value || '').toLowerCase().trim();
+  const fProveedor = (document.getElementById('dash-f-proveedor')?.value || '').toLowerCase().trim();
+  const fSat = document.getElementById('dash-f-sat')?.value || '';
+
+  let filtradas = dashCtrlRowsAll.filter(r=>{
+    if(fFecha && r.fecha !== fFecha) return false;
+    if(fPn && !(r.numero_pieza||'').toLowerCase().includes(fPn)) return false;
+    if(fProveedor && !(r.proveedor_nombre||'').toLowerCase().includes(fProveedor)) return false;
+    if(fSat){
+      const s = r.saturacion;
+      if(fSat==='sin' && s!==null && s!==undefined) return false;
+      if(fSat==='alta' && !(s!==null && s!==undefined && s>=80)) return false;
+      if(fSat==='media' && !(s!==null && s!==undefined && s>=50 && s<80)) return false;
+      if(fSat==='baja' && !(s!==null && s!==undefined && s<50)) return false;
+    }
+    return true;
+  });
+
   const tbody=document.getElementById('dash-ctrl-body');
-  const latest=ctrlRows.slice(0,8);
-  if(!latest.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Sin registros</td></tr>';return;}
-  tbody.innerHTML=latest.map(r=>`
+  if(!filtradas.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Sin registros que coincidan</td></tr>';
+    return;
+  }
+  tbody.innerHTML=filtradas.map(r=>`
     <tr>
       <td>${r.fecha||'—'}</td>
       <td><strong>${r.numero_pieza||'—'}</strong></td>
