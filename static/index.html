@@ -1213,7 +1213,11 @@ function renderRIAI(d){
 // ── CONTROL ───────────────────────────────────────────────────────────────
 function toggleCtrlForm(show){
   document.getElementById('ctrl-form').style.display=show?'block':'none';
-  if(show){clearCtrlForm();document.getElementById('ctrl-form-title').textContent='Nuevo registro de control';}
+  if(show){
+    clearCtrlForm();
+    document.getElementById('ctrl-form-title').textContent='Nuevo registro de control';
+    document.getElementById('ctrl-form').scrollIntoView({behavior:'smooth', block:'start'});
+  }
 }
 function clearCtrlForm(){
   document.getElementById('ctrl-id').value='';
