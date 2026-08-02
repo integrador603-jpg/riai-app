@@ -1318,7 +1318,7 @@ async function loadControl(q=''){
       <td class="actions">
         <button class="btn btn-outline btn-xs" onclick="viewControl(${r.id})">Ver</button>
         ${canEdit?`<button class="btn btn-secondary btn-xs" onclick="editControl(${r.id})">Editar</button>`:''}
-        ${r.img_abierta?`<button class="btn btn-info btn-xs" onclick="reAnalizarControl(${r.id})">Analizar</button>`:''}
+        ${r.tiene_img_abierta?`<button class="btn btn-info btn-xs" onclick="reAnalizarControl(${r.id})">Analizar</button>`:''}
         ${canDelete?`<button class="btn btn-danger btn-xs" onclick="deleteControl(${r.id})">Eliminar</button>`:''}
       </td>
     </tr>`).join('');
