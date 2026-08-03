@@ -938,7 +938,7 @@ function renderRankingProveedores(){
   if(rankingModo==='cantidad'){
     tituloEl.textContent = 'Ranking de proveedores (PNs relevados)';
     arr = rankingProveedoresAll
-      .map(p=>({nombre:p.nombre, valor:p.cantidad, texto:`${p.cantidad} PN${p.cantidad!==1?'s':''}`, color:'var(--azul)'}))
+      .map(p=>({nombre:p.nombre, valor:p.cantidad, texto:`${p.cantidad}`, color:'var(--azul)'}))
       .filter(p=>p.valor>0)
       .sort((a,b)=>b.valor-a.valor);
   } else {
