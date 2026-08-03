@@ -823,7 +823,7 @@ async function loadDashboard(){
   dashCtrlRowsAll = ctrlRows; // cache para los filtros de la tabla de abajo
 
   // Stats
-  const pnUnicos = new Set(riaiRows.map(r=>r.numero_pieza).filter(Boolean)).size;
+  const pnUnicos = new Set(ctrlRows.map(r=>r.numero_pieza).filter(Boolean)).size;
   document.getElementById('stat-total').textContent = riaiRows.length;
   document.getElementById('stat-pn-unicos').textContent = pnUnicos;
   document.getElementById('stat-controles').textContent = ctrlRows.length;
@@ -849,9 +849,9 @@ async function loadDashboard(){
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
 
-  // Ranking de proveedores: cantidad de PNs (únicos) relevados por proveedor, en RIAI
+  // Ranking de proveedores: cantidad de PNs (únicos) relevados por proveedor, en Control
   const porProveedor = {};
-  riaiRows.forEach(r=>{
+  ctrlRows.forEach(r=>{
     const nombre = r.proveedor_nombre || 'Sin proveedor';
     if(!porProveedor[nombre]) porProveedor[nombre] = new Set();
     if(r.numero_pieza) porProveedor[nombre].add(r.numero_pieza);
