@@ -130,11 +130,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .chart-box{background:#fff;border-radius:8px;box-shadow:var(--sombra);padding:20px}
 .chart-title{font-size:13px;font-weight:700;color:var(--texto);margin-bottom:16px}
 .chart-canvas{width:100%;height:200px;position:relative}
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-top:20px;padding-bottom:20px;position:relative}
-.bar-chart-labels{display:flex;gap:6px;margin-top:4px}
-.bar{flex:1;background:var(--rojo);border-radius:4px 4px 0 0;min-width:20px;transition:height .3s;position:relative;cursor:pointer}
+.bar-chart-scroll{overflow-x:auto;overflow-y:hidden}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-top:20px;padding-bottom:20px;position:relative;width:max-content;min-width:100%}
+.bar-chart-labels{display:flex;gap:6px;margin-top:4px;width:max-content;min-width:100%}
+.bar{flex:0 0 28px;width:28px;background:var(--rojo);border-radius:4px 4px 0 0;transition:height .3s;position:relative;cursor:pointer}
 .bar:hover{background:var(--rojo-dark)}
-.bar-label{font-size:9px;color:#888;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-label{flex:0 0 28px;width:28px;font-size:9px;color:#888;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ranking-hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ranking-hbar-label{flex:0 0 100px;width:100px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ranking-hbar-track{flex:1;background:#f0f1f4;border-radius:4px;height:16px;overflow:hidden}
+.ranking-hbar-fill{height:100%;border-radius:4px;background:var(--azul);transition:width .3s}
+.ranking-hbar-val{flex:0 0 40px;width:40px;text-align:right;font-size:11px;font-weight:700;color:#555}
+.ranking-toggle-btn{background:none;border:1px solid var(--borde);border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888}
+.ranking-toggle-btn:hover{background:#f5f5f5;color:#333}
 .bar-tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#333;color:#fff;font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;display:none;z-index:10}
 .bar:hover .bar-tooltip{display:block}
 
@@ -267,15 +275,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   <div class="charts-row">
     <div class="chart-box">
       <div class="chart-title">PNs relevados por día (últimos 14 días)</div>
-      <div class="bar-chart" id="chart-bars"></div>
-      <div class="bar-chart-labels" id="chart-labels"></div>
+      <div class="bar-chart-scroll">
+        <div class="bar-chart" id="chart-bars"></div>
+        <div class="bar-chart-labels" id="chart-labels"></div>
+      </div>
     </div>
     <div class="chart-box">
       <div class="chart-title">Divergencia RIAI vs Control</div>
       <div id="diverg-list" style="font-size:13px"></div>
     </div>
     <div class="chart-box">
-      <div class="chart-title">Ranking de proveedores (PNs relevados)</div>
+      <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span id="ranking-titulo">Ranking de proveedores (PNs relevados)</span>
+        <button class="ranking-toggle-btn" title="Cambiar métrica" onclick="toggleRankingModo()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+        </button>
+      </div>
       <div id="ranking-proveedores-list" style="font-size:13px"></div>
     </div>
   </div>
@@ -284,8 +299,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     <div class="card-header">Registros de control</div>
     <div class="dash-ctrl-filters">
       <input type="date" id="dash-f-fecha" title="Filtrar por fecha" onchange="renderDashCtrl()">
-      <input type="text" id="dash-f-pn" placeholder="Filtrar por PN" oninput="renderDashCtrl()">
-      <input type="text" id="dash-f-proveedor" placeholder="Filtrar por proveedor" oninput="renderDashCtrl()">
+      <input type="text" id="dash-f-pn" name="dash-f-pn" placeholder="Filtrar por PN" autocomplete="off" oninput="renderDashCtrl()">
+      <input type="text" id="dash-f-proveedor" name="dash-f-proveedor" placeholder="Filtrar por proveedor" autocomplete="off" oninput="renderDashCtrl()">
       <select id="dash-f-sat" onchange="renderDashCtrl()">
         <option value="">Saturación: todas</option>
         <option value="alta">Alta (≥80%)</option>
@@ -849,27 +864,22 @@ async function loadDashboard(){
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
 
-  // Ranking de proveedores: cantidad de PNs (únicos) relevados por proveedor, en Control
+  // Ranking de proveedores: cantidad de PNs (únicos) relevados, y saturación
+  // promedio, por proveedor -- en base a Control. Se guarda todo para poder
+  // togglear entre las dos métricas sin volver a pedir los datos.
   const porProveedor = {};
   ctrlRows.forEach(r=>{
     const nombre = r.proveedor_nombre || 'Sin proveedor';
-    if(!porProveedor[nombre]) porProveedor[nombre] = new Set();
-    if(r.numero_pieza) porProveedor[nombre].add(r.numero_pieza);
+    if(!porProveedor[nombre]) porProveedor[nombre] = {pns:new Set(), sats:[]};
+    if(r.numero_pieza) porProveedor[nombre].pns.add(r.numero_pieza);
+    if(r.saturacion!==null && r.saturacion!==undefined) porProveedor[nombre].sats.push(r.saturacion);
   });
-  const rankingEl = document.getElementById('ranking-proveedores-list');
-  const rankingArr = Object.entries(porProveedor)
-    .map(([nombre,pns])=>({nombre, cantidad:pns.size}))
-    .sort((a,b)=>b.cantidad-a.cantidad)
-    .slice(0,8);
-  if(!rankingArr.length){
-    rankingEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px 0">Sin datos todavía</div>';
-  } else {
-    rankingEl.innerHTML = rankingArr.map(p=>`
-      <div class="ranking-row">
-        <span>${p.nombre}</span>
-        <span class="ranking-badge">${p.cantidad} PN${p.cantidad!==1?'s':''}</span>
-      </div>`).join('');
-  }
+  rankingProveedoresAll = Object.entries(porProveedor).map(([nombre,d])=>({
+    nombre,
+    cantidad: d.pns.size,
+    satProm: d.sats.length ? d.sats.reduce((a,b)=>a+b,0)/d.sats.length : null,
+  }));
+  renderRankingProveedores();
 
   // Gráfico barras — PNs relevados por día (últimos 14 días), basado en Control
   const days = 14;
@@ -893,7 +903,7 @@ async function loadDashboard(){
       <div style="position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:#555">${v>0?v:''}</div>
       <div class="bar-tooltip">${labels[i]}: ${v}</div>
     </div>`).join('');
-  labelsEl.innerHTML=labels.map(l=>`<div class="bar-label" style="flex:1">${l.slice(5)}</div>`).join('');
+  labelsEl.innerHTML=labels.map(l=>`<div class="bar-label">${l.slice(5)}</div>`).join('');
 
   // Divergencia list
   const divEl=document.getElementById('diverg-list');
@@ -911,6 +921,47 @@ async function loadDashboard(){
 }
 
 let dashCtrlRowsAll = [];
+let rankingProveedoresAll = [];
+let rankingModo = 'cantidad'; // 'cantidad' | 'saturacion'
+
+function toggleRankingModo(){
+  rankingModo = rankingModo==='cantidad' ? 'saturacion' : 'cantidad';
+  renderRankingProveedores();
+}
+
+function renderRankingProveedores(){
+  const rankingEl = document.getElementById('ranking-proveedores-list');
+  const tituloEl = document.getElementById('ranking-titulo');
+
+  let arr;
+  if(rankingModo==='cantidad'){
+    tituloEl.textContent = 'Ranking de proveedores (PNs relevados)';
+    arr = rankingProveedoresAll
+      .map(p=>({nombre:p.nombre, valor:p.cantidad, texto:`${p.cantidad} PN${p.cantidad!==1?'s':''}`}))
+      .filter(p=>p.valor>0)
+      .sort((a,b)=>b.valor-a.valor)
+      .slice(0,8);
+  } else {
+    tituloEl.textContent = 'Ranking de proveedores (saturación promedio)';
+    arr = rankingProveedoresAll
+      .filter(p=>p.satProm!==null)
+      .map(p=>({nombre:p.nombre, valor:p.satProm, texto:`${Math.round(p.satProm)}%`}))
+      .sort((a,b)=>b.valor-a.valor)
+      .slice(0,8);
+  }
+
+  if(!arr.length){
+    rankingEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px 0">Sin datos todavía</div>';
+    return;
+  }
+  const maxVal = Math.max(...arr.map(p=>p.valor), 1);
+  rankingEl.innerHTML = arr.map(p=>`
+    <div class="ranking-hbar-row">
+      <span class="ranking-hbar-label" title="${p.nombre}">${p.nombre}</span>
+      <div class="ranking-hbar-track"><div class="ranking-hbar-fill" style="width:${(p.valor/maxVal)*100}%"></div></div>
+      <span class="ranking-hbar-val">${p.texto}</span>
+    </div>`).join('');
+}
 
 function clearDashCtrlFilters(){
   document.getElementById('dash-f-fecha').value='';
