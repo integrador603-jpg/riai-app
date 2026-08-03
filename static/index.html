@@ -72,11 +72,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .search-row input{flex:1}
 .img-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 .img-slot{position:relative}
-.img-upload{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border .2s;background:#fafafa}
+.img-upload{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border .2s,background .2s;background:#fafafa}
+.img-upload.img-drop-over{border-color:var(--azul);background:#eaf3ff}
 .img-upload:hover{border-color:var(--rojo);background:#fef5f6}
 .img-upload-icon{font-size:24px;color:#ccc}
 .img-upload-text{font-size:11px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.img-preview{width:100%;height:110px;object-fit:cover;border-radius:4px;display:none}
+.img-preview{width:100%;height:110px;object-fit:cover;border-radius:4px;display:none;cursor:grab}
+.img-preview:active{cursor:grabbing}
 .img-remove{position:absolute;top:6px;right:6px;background:var(--rojo);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;font-weight:700;display:none;align-items:center;justify-content:center;line-height:1;z-index:10}
 .img-remove.visible{display:flex}
 .img-slot-label{font-size:11px;font-weight:600;color:var(--texto-suave);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
@@ -287,7 +289,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     </div>
     <div class="chart-box">
       <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span id="ranking-titulo">Top proveedores x controles</span>
+        <span id="ranking-titulo">Ranking de proveedores (PNs relevados)</span>
         <button class="ranking-toggle-btn" title="Cambiar métrica" onclick="toggleRankingModo()">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
         </button>
@@ -610,35 +612,38 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="fld"><label>Notas</label><input type="text" id="ctrl-notas" placeholder="Observaciones..."></div>
     </div>
 
-    <div class="section-label" style="margin-top:16px">Fotos</div>
+    <div class="section-label" style="margin-top:16px">Fotos <span style="font-weight:400;color:#999;font-size:11px">(arrastrá una foto sobre otro casillero para moverla)</span></div>
     <div class="img-grid">
       <div class="img-slot">
         <div class="img-slot-label">Caja cerrada</div>
         <button class="img-remove" id="rm-ctrl-cerrada" onclick="removeCtrlImg('cerrada')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-cerrada').click()">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-cerrada').click()"
+             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'cerrada')">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-cerrada" class="img-preview">
+          <img id="prev-ctrl-cerrada" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'cerrada')">
         </div>
         <input type="file" id="up-ctrl-cerrada" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'cerrada')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Caja abierta</div>
         <button class="img-remove" id="rm-ctrl-abierta" onclick="removeCtrlImg('abierta')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-abierta').click()">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-abierta').click()"
+             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'abierta')">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-abierta" class="img-preview">
+          <img id="prev-ctrl-abierta" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'abierta')">
         </div>
         <input type="file" id="up-ctrl-abierta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'abierta')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Etiqueta del proveedor</div>
         <button class="img-remove" id="rm-ctrl-etiqueta" onclick="removeCtrlImg('etiqueta')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-etiqueta').click()">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-etiqueta').click()"
+             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'etiqueta')">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-etiqueta" class="img-preview">
+          <img id="prev-ctrl-etiqueta" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'etiqueta')">
         </div>
         <input type="file" id="up-ctrl-etiqueta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
       </div>
@@ -1445,6 +1450,40 @@ function removeCtrlImg(key){
   document.getElementById(`rm-ctrl-${key}`).classList.remove('visible');
   document.getElementById(`up-ctrl-${key}`).value='';
   if(key==='abierta') setSatUI(null);
+}
+
+// ── Drag & drop para mover/intercambiar fotos entre casilleros ────────────
+let ctrlDragKey=null;
+function dragCtrlImgStart(e,key){
+  const img=document.getElementById(`prev-ctrl-${key}`);
+  if(!img.src){e.preventDefault();return;} // nada para arrastrar si el casillero está vacío
+  ctrlDragKey=key;
+  e.dataTransfer.effectAllowed='move';
+}
+function dragCtrlImgOver(e){ e.preventDefault(); e.currentTarget.classList.add('img-drop-over'); }
+function dragCtrlImgLeave(e){ e.currentTarget.classList.remove('img-drop-over'); }
+function dropCtrlImg(e,key){
+  e.preventDefault();
+  e.currentTarget.classList.remove('img-drop-over');
+  if(!ctrlDragKey || ctrlDragKey===key){ ctrlDragKey=null; return; }
+  swapCtrlImgs(ctrlDragKey,key);
+  ctrlDragKey=null;
+}
+function swapCtrlImgs(keyA,keyB){
+  const imgA=document.getElementById(`prev-ctrl-${keyA}`), imgB=document.getElementById(`prev-ctrl-${keyB}`);
+  const rmA=document.getElementById(`rm-ctrl-${keyA}`), rmB=document.getElementById(`rm-ctrl-${keyB}`);
+  const srcA=imgA.src, dispA=imgA.style.display, visA=rmA.classList.contains('visible');
+  const srcB=imgB.src, dispB=imgB.style.display, visB=rmB.classList.contains('visible');
+
+  imgA.src=srcB; imgA.style.display=dispB; rmA.classList.toggle('visible',visB);
+  imgB.src=srcA; imgB.style.display=dispA; rmB.classList.toggle('visible',visA);
+
+  // los <input type=file> no se pueden "intercambiar" (por seguridad del navegador),
+  // pero el guardado usa el .src del <img> (base64), así que no hace falta -- se
+  // limpian nomás para que no confundan si se vuelve a tocar el file picker
+  document.getElementById(`up-ctrl-${keyA}`).value='';
+  document.getElementById(`up-ctrl-${keyB}`).value='';
+  toast('Fotos movidas — no te olvides de Guardar');
 }
 
 async function analizarSaturacion(imgSrc){
