@@ -122,7 +122,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .chart-box{background:#fff;border-radius:8px;box-shadow:var(--sombra);padding:20px}
 .chart-title{font-size:13px;font-weight:700;color:var(--texto);margin-bottom:16px}
 .chart-canvas{width:100%;height:200px;position:relative}
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:20px;position:relative}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-top:20px;padding-bottom:20px;position:relative}
 .bar-chart-labels{display:flex;gap:6px;margin-top:4px}
 .bar{flex:1;background:var(--rojo);border-radius:4px 4px 0 0;min-width:20px;transition:height .3s;position:relative;cursor:pointer}
 .bar:hover{background:var(--rojo-dark)}
@@ -583,7 +583,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="img-upload-text">Seleccionar imagen</div>
           <img id="prev-ctrl-abierta" class="img-preview">
         </div>
-        <input type="file" id="up-ctrl-abierta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'abierta')">
+        <input type="file" id="up-ctrl-abierta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'abierta')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Etiqueta del proveedor</div>
@@ -593,7 +593,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="img-upload-text">Seleccionar imagen</div>
           <img id="prev-ctrl-etiqueta" class="img-preview">
         </div>
-        <input type="file" id="up-ctrl-etiqueta" accept="image/*" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
+        <input type="file" id="up-ctrl-etiqueta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
       </div>
     </div>
 
@@ -802,12 +802,13 @@ async function loadDashboard(){
   ctrlRows.forEach(c=>{
     const r=riaiMap[c.numero_pieza];
     if(!r) return;
-    // Comparar qty: control vs capacidad RIAI
-    if(c.qty_por_caja && r.p1_capacidad && Math.abs(c.qty_por_caja - r.p1_capacidad) > 0) divergentes.add(c.numero_pieza);
+    const capacidadRiai = parseInt(r.p1_capacidad) || parseInt(r.p2_capacidad) || null;
+    const qtyControl = parseInt(c.qty_por_caja) || null;
+    if(qtyControl!==null && capacidadRiai!==null && qtyControl !== capacidadRiai) divergentes.add(c.numero_pieza);
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
 
-  // Gráfico barras — PNs relevados por día (últimos 14 días)
+  // Gráfico barras — PNs relevados por día (últimos 14 días), basado en Control
   const days = 14;
   const counts = {};
   const today = new Date();
@@ -815,8 +816,8 @@ async function loadDashboard(){
     const d=new Date(today); d.setDate(d.getDate()-i);
     counts[d.toISOString().split('T')[0]] = 0;
   }
-  riaiRows.forEach(r=>{
-    const d=r.creado_en?.split(' ')[0]||r.fecha;
+  ctrlRows.forEach(r=>{
+    const d=(r.fecha||r.creado_en||'').split(' ')[0];
     if(d && counts[d]!==undefined) counts[d]++;
   });
   const labels=Object.keys(counts);
@@ -826,6 +827,7 @@ async function loadDashboard(){
   const labelsEl=document.getElementById('chart-labels');
   barsEl.innerHTML=vals.map((v,i)=>`
     <div class="bar" style="height:${Math.max(4,(v/maxVal)*140)}px">
+      <div style="position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:#555">${v>0?v:''}</div>
       <div class="bar-tooltip">${labels[i]}: ${v}</div>
     </div>`).join('');
   labelsEl.innerHTML=labels.map(l=>`<div class="bar-label" style="flex:1">${l.slice(5)}</div>`).join('');
