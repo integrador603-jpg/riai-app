@@ -72,13 +72,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .search-row input{flex:1}
 .img-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 .img-slot{position:relative}
-.img-upload{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border .2s,background .2s;background:#fafafa}
-.img-upload.img-drop-over{border-color:var(--azul);background:#eaf3ff}
+.img-upload{border:2px dashed #ccc;border-radius:6px;padding:16px;text-align:center;cursor:pointer;height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border .2s;background:#fafafa}
 .img-upload:hover{border-color:var(--rojo);background:#fef5f6}
 .img-upload-icon{font-size:24px;color:#ccc}
 .img-upload-text{font-size:11px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.img-preview{width:100%;height:110px;object-fit:cover;border-radius:4px;display:none;cursor:grab}
-.img-preview:active{cursor:grabbing}
+.img-preview{width:100%;height:110px;object-fit:cover;border-radius:4px;display:none}
 .img-remove{position:absolute;top:6px;right:6px;background:var(--rojo);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;font-weight:700;display:none;align-items:center;justify-content:center;line-height:1;z-index:10}
 .img-remove.visible{display:flex}
 .img-slot-label{font-size:11px;font-weight:600;color:var(--texto-suave);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
@@ -110,7 +108,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .toast-ok{background:var(--verde)}.toast-err{background:#e74c3c}
 
 /* Dashboard */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:20px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
 .stat-card{background:#fff;border-radius:8px;padding:20px;box-shadow:var(--sombra);border-left:4px solid var(--rojo);display:flex;align-items:center;gap:14px}
 .stat-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .stat-icon svg{width:22px;height:22px;fill:#fff}
@@ -120,32 +118,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .stat-icon-orange{background:var(--naranja)}
 .stat-num{font-size:26px;font-weight:800;color:var(--texto)}
 .stat-label{font-size:11px;color:var(--texto-suave);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-.charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
-.dash-ctrl-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.dash-ctrl-filters input,.dash-ctrl-filters select{padding:7px 10px;border:1px solid var(--borde);border-radius:6px;font-size:13px}
-.dash-ctrl-scroll{max-height:420px;overflow-y:auto;border:1px solid var(--borde);border-radius:8px}
-.dash-ctrl-scroll table{margin:0}
-.dash-ctrl-scroll thead th{position:sticky;top:0;background:#fff;z-index:1}
-.ranking-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
-.ranking-row:last-child{border-bottom:none}
-.ranking-badge{background:var(--gris);border-radius:10px;padding:2px 9px;font-weight:700;font-size:12px}
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
 .chart-box{background:#fff;border-radius:8px;box-shadow:var(--sombra);padding:20px}
 .chart-title{font-size:13px;font-weight:700;color:var(--texto);margin-bottom:16px}
 .chart-canvas{width:100%;height:200px;position:relative}
-.bar-chart-scroll{overflow-x:auto;overflow-y:hidden}
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:8px;padding-bottom:8px;position:relative;width:max-content;min-width:100%}
-.bar-chart-labels{display:flex;gap:6px;margin-top:4px;width:max-content;min-width:100%}
-.bar{flex:0 0 28px;width:28px;background:var(--rojo);border-radius:4px 4px 0 0;transition:height .3s;position:relative;cursor:pointer}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:160px;padding-top:20px;padding-bottom:20px;position:relative}
+.bar-chart-labels{display:flex;gap:6px;margin-top:4px}
+.bar{flex:1;background:var(--rojo);border-radius:4px 4px 0 0;min-width:20px;transition:height .3s;position:relative;cursor:pointer}
 .bar:hover{background:var(--rojo-dark)}
-.bar-label{flex:0 0 28px;width:28px;font-size:9px;color:#888;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ranking-hbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.ranking-hbar-label{flex:0 0 100px;width:100px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ranking-hbar-track{flex:1;background:#f0f1f4;border-radius:4px;height:20px;overflow:hidden;position:relative}
-.ranking-hbar-fill{height:100%;border-radius:4px;background:var(--azul);transition:width .3s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;box-sizing:border-box}
-.ranking-hbar-val-in{font-size:11px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 1px rgba(0,0,0,.25)}
-.ranking-proveedores-scroll{max-height:280px;overflow-y:auto;padding-right:4px}
-.ranking-toggle-btn{background:none;border:1px solid var(--borde);border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888}
-.ranking-toggle-btn:hover{background:#f5f5f5;color:#333}
+.bar-label{font-size:9px;color:#888;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#333;color:#fff;font-size:10px;padding:3px 6px;border-radius:3px;white-space:nowrap;display:none;z-index:10}
 .bar:hover .bar-tooltip{display:block}
 
@@ -269,56 +250,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="stat-icon stat-icon-orange"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
       <div><div class="stat-num" id="stat-divergencia">—</div><div class="stat-label">PNs con divergencia</div></div>
     </div>
-    <div class="stat-card" style="border-left-color:#8e44ad">
-      <div class="stat-icon" style="background:#f4ecf9;color:#8e44ad"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 10h2v2H7v-2zm4-4h2v6h-2v-6zm4-3h2v9h-2V8z"/></svg></div>
-      <div><div class="stat-num" id="stat-sat-prom">—</div><div class="stat-label">Saturación promedio</div></div>
-    </div>
   </div>
 
   <div class="charts-row">
     <div class="chart-box">
       <div class="chart-title">PNs relevados por día (últimos 14 días)</div>
-      <div class="bar-chart-scroll">
-        <div class="bar-chart" id="chart-bars"></div>
-        <div class="bar-chart-labels" id="chart-labels"></div>
-      </div>
+      <div class="bar-chart" id="chart-bars"></div>
+      <div class="bar-chart-labels" id="chart-labels"></div>
     </div>
     <div class="chart-box">
       <div class="chart-title">Divergencia RIAI vs Control</div>
       <div id="diverg-list" style="font-size:13px"></div>
     </div>
-    <div class="chart-box">
-      <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span id="ranking-titulo">Ranking de proveedores (PNs relevados)</span>
-        <button class="ranking-toggle-btn" title="Cambiar métrica" onclick="toggleRankingModo()">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
-        </button>
-      </div>
-      <div class="ranking-proveedores-scroll"><div id="ranking-proveedores-list" style="font-size:13px"></div></div>
-    </div>
   </div>
 
   <div class="card">
-    <div class="card-header">Registros de control</div>
-    <div class="dash-ctrl-filters">
-      <input type="date" id="dash-f-fecha" title="Filtrar por fecha" onchange="renderDashCtrl()">
-      <input type="text" id="dash-f-pn" name="dash-f-pn" placeholder="Filtrar por PN" autocomplete="off" oninput="renderDashCtrl()">
-      <input type="text" id="dash-f-proveedor" name="dash-f-proveedor" placeholder="Filtrar por proveedor" autocomplete="off" oninput="renderDashCtrl()">
-      <select id="dash-f-sat" onchange="renderDashCtrl()">
-        <option value="">Saturación: todas</option>
-        <option value="alta">Alta (≥80%)</option>
-        <option value="media">Media (50-79%)</option>
-        <option value="baja">Baja (&lt;50%)</option>
-        <option value="sin">Sin analizar</option>
-      </select>
-      <button class="btn btn-outline btn-xs" onclick="clearDashCtrlFilters()">Limpiar filtros</button>
-    </div>
-    <div class="dash-ctrl-scroll">
-      <table class="data-table">
-        <thead><tr><th>Fecha</th><th>PN</th><th>Proveedor</th><th>Dimensiones</th><th>Qty/caja</th><th>Saturación</th></tr></thead>
-        <tbody id="dash-ctrl-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Cargando...</td></tr></tbody>
-      </table>
-    </div>
+    <div class="card-header">Últimos registros de control</div>
+    <table class="data-table">
+      <thead><tr><th>Fecha</th><th>PN</th><th>Proveedor</th><th>Dimensiones</th><th>Qty/caja</th><th>Saturación</th></tr></thead>
+      <tbody id="dash-ctrl-body"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Cargando...</td></tr></tbody>
+    </table>
   </div>
 </div>
 
@@ -612,38 +563,35 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="fld"><label>Notas</label><input type="text" id="ctrl-notas" placeholder="Observaciones..."></div>
     </div>
 
-    <div class="section-label" style="margin-top:16px">Fotos <span style="font-weight:400;color:#999;font-size:11px">(arrastrá una foto sobre otro casillero para moverla)</span></div>
+    <div class="section-label" style="margin-top:16px">Fotos</div>
     <div class="img-grid">
       <div class="img-slot">
         <div class="img-slot-label">Caja cerrada</div>
         <button class="img-remove" id="rm-ctrl-cerrada" onclick="removeCtrlImg('cerrada')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-cerrada').click()"
-             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'cerrada')">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-cerrada').click()">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-cerrada" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'cerrada')">
+          <img id="prev-ctrl-cerrada" class="img-preview">
         </div>
         <input type="file" id="up-ctrl-cerrada" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'cerrada')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Caja abierta</div>
         <button class="img-remove" id="rm-ctrl-abierta" onclick="removeCtrlImg('abierta')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-abierta').click()"
-             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'abierta')">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-abierta').click()">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-abierta" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'abierta')">
+          <img id="prev-ctrl-abierta" class="img-preview">
         </div>
         <input type="file" id="up-ctrl-abierta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'abierta')">
       </div>
       <div class="img-slot">
         <div class="img-slot-label">Etiqueta del proveedor</div>
         <button class="img-remove" id="rm-ctrl-etiqueta" onclick="removeCtrlImg('etiqueta')">&#215;</button>
-        <div class="img-upload" onclick="document.getElementById('up-ctrl-etiqueta').click()"
-             ondragover="dragCtrlImgOver(event)" ondragleave="dragCtrlImgLeave(event)" ondrop="dropCtrlImg(event,'etiqueta')">
+        <div class="img-upload" onclick="document.getElementById('up-ctrl-etiqueta').click()">
           <div class="img-upload-icon">&#9679;</div>
           <div class="img-upload-text">Seleccionar imagen</div>
-          <img id="prev-ctrl-etiqueta" class="img-preview" draggable="true" ondragstart="dragCtrlImgStart(event,'etiqueta')">
+          <img id="prev-ctrl-etiqueta" class="img-preview">
         </div>
         <input type="file" id="up-ctrl-etiqueta" accept="image/*" capture="environment" style="display:none" onchange="previewCtrlImg(this,'etiqueta')">
       </div>
@@ -841,22 +789,11 @@ async function loadDashboard(){
     fetch(`${API}/control`,{credentials:'include'}).then(r=>r.json()).catch(()=>[]),
   ]);
 
-  dashCtrlRowsAll = ctrlRows; // cache para los filtros de la tabla de abajo
-
   // Stats
-  const pnUnicos = new Set(ctrlRows.map(r=>r.numero_pieza).filter(Boolean)).size;
+  const pnUnicos = new Set(riaiRows.map(r=>r.numero_pieza).filter(Boolean)).size;
   document.getElementById('stat-total').textContent = riaiRows.length;
   document.getElementById('stat-pn-unicos').textContent = pnUnicos;
   document.getElementById('stat-controles').textContent = ctrlRows.length;
-
-  // Saturación promedio (solo sobre los registros que ya tienen valor calculado)
-  const conSaturacion = ctrlRows.filter(r=>r.saturacion!==null && r.saturacion!==undefined);
-  if(conSaturacion.length){
-    const promedio = conSaturacion.reduce((acc,r)=>acc+r.saturacion,0)/conSaturacion.length;
-    document.getElementById('stat-sat-prom').textContent = Math.round(promedio)+'%';
-  } else {
-    document.getElementById('stat-sat-prom').textContent = '—';
-  }
 
   // Divergencia: PNs en control que difieren en dimensiones respecto al RIAI
   const riaiMap = {};
@@ -865,27 +802,11 @@ async function loadDashboard(){
   ctrlRows.forEach(c=>{
     const r=riaiMap[c.numero_pieza];
     if(!r) return;
-    // Comparar qty: control vs capacidad RIAI
-    if(c.qty_por_caja && r.p1_capacidad && Math.abs(c.qty_por_caja - r.p1_capacidad) > 0) divergentes.add(c.numero_pieza);
+    const capacidadRiai = parseInt(r.p1_capacidad) || parseInt(r.p2_capacidad) || null;
+    const qtyControl = parseInt(c.qty_por_caja) || null;
+    if(qtyControl!==null && capacidadRiai!==null && qtyControl !== capacidadRiai) divergentes.add(c.numero_pieza);
   });
   document.getElementById('stat-divergencia').textContent = divergentes.size;
-
-  // Ranking de proveedores: cantidad de PNs (únicos) relevados, y saturación
-  // promedio, por proveedor -- en base a Control. Se guarda todo para poder
-  // togglear entre las dos métricas sin volver a pedir los datos.
-  const porProveedor = {};
-  ctrlRows.forEach(r=>{
-    const nombre = r.proveedor_nombre || 'Sin proveedor';
-    if(!porProveedor[nombre]) porProveedor[nombre] = {pns:new Set(), sats:[]};
-    if(r.numero_pieza) porProveedor[nombre].pns.add(r.numero_pieza);
-    if(r.saturacion!==null && r.saturacion!==undefined) porProveedor[nombre].sats.push(r.saturacion);
-  });
-  rankingProveedoresAll = Object.entries(porProveedor).map(([nombre,d])=>({
-    nombre,
-    cantidad: d.pns.size,
-    satProm: d.sats.length ? d.sats.reduce((a,b)=>a+b,0)/d.sats.length : null,
-  }));
-  renderRankingProveedores();
 
   // Gráfico barras — PNs relevados por día (últimos 14 días), basado en Control
   const days = 14;
@@ -905,11 +826,11 @@ async function loadDashboard(){
   const barsEl=document.getElementById('chart-bars');
   const labelsEl=document.getElementById('chart-labels');
   barsEl.innerHTML=vals.map((v,i)=>`
-    <div class="bar" style="height:${v>0?Math.max(20,(v/maxVal)*128):4}px">
-      ${v>0?`<div style="position:absolute;top:4px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)">${v}</div>`:''}
+    <div class="bar" style="height:${Math.max(4,(v/maxVal)*140)}px">
+      <div style="position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:#555">${v>0?v:''}</div>
       <div class="bar-tooltip">${labels[i]}: ${v}</div>
     </div>`).join('');
-  labelsEl.innerHTML=labels.map(l=>`<div class="bar-label">${l.slice(5)}</div>`).join('');
+  labelsEl.innerHTML=labels.map(l=>`<div class="bar-label" style="flex:1">${l.slice(5)}</div>`).join('');
 
   // Divergencia list
   const divEl=document.getElementById('diverg-list');
@@ -923,93 +844,11 @@ async function loadDashboard(){
       </div>`).join('');
   }
 
-  renderDashCtrl();
-}
-
-let dashCtrlRowsAll = [];
-let rankingProveedoresAll = [];
-let rankingModo = 'cantidad'; // 'cantidad' | 'saturacion'
-
-function toggleRankingModo(){
-  rankingModo = rankingModo==='cantidad' ? 'saturacion' : 'cantidad';
-  renderRankingProveedores();
-}
-
-function renderRankingProveedores(){
-  const rankingEl = document.getElementById('ranking-proveedores-list');
-  const tituloEl = document.getElementById('ranking-titulo');
-
-  let arr;
-  if(rankingModo==='cantidad'){
-    tituloEl.textContent = 'Ranking de proveedores (PNs relevados)';
-    arr = rankingProveedoresAll
-      .map(p=>({nombre:p.nombre, valor:p.cantidad, texto:`${p.cantidad}`, color:'var(--azul)'}))
-      .filter(p=>p.valor>0)
-      .sort((a,b)=>b.valor-a.valor);
-  } else {
-    tituloEl.textContent = 'Ranking de proveedores (saturación promedio)';
-    arr = rankingProveedoresAll
-      .filter(p=>p.satProm!==null)
-      .map(p=>({
-        nombre:p.nombre, valor:p.satProm, texto:`${Math.round(p.satProm)}%`,
-        color: p.satProm>=80?'var(--verde)':p.satProm>=50?'var(--naranja)':'var(--rojo)',
-      }))
-      .sort((a,b)=>b.valor-a.valor);
-  }
-
-  if(!arr.length){
-    rankingEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px 0">Sin datos todavía</div>';
-    return;
-  }
-  const maxVal = Math.max(...arr.map(p=>p.valor), 1);
-  rankingEl.innerHTML = arr.map(p=>{
-    const pct = Math.max((p.valor/maxVal)*100, 14); // mínimo para que siempre entre el número
-    return `
-    <div class="ranking-hbar-row">
-      <span class="ranking-hbar-label" title="${p.nombre}">${p.nombre}</span>
-      <div class="ranking-hbar-track">
-        <div class="ranking-hbar-fill" style="width:${pct}%;background:${p.color}">
-          <span class="ranking-hbar-val-in">${p.texto}</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function clearDashCtrlFilters(){
-  document.getElementById('dash-f-fecha').value='';
-  document.getElementById('dash-f-pn').value='';
-  document.getElementById('dash-f-proveedor').value='';
-  document.getElementById('dash-f-sat').value='';
-  renderDashCtrl();
-}
-
-function renderDashCtrl(){
-  const fFecha = document.getElementById('dash-f-fecha')?.value || '';
-  const fPn = (document.getElementById('dash-f-pn')?.value || '').toLowerCase().trim();
-  const fProveedor = (document.getElementById('dash-f-proveedor')?.value || '').toLowerCase().trim();
-  const fSat = document.getElementById('dash-f-sat')?.value || '';
-
-  let filtradas = dashCtrlRowsAll.filter(r=>{
-    if(fFecha && r.fecha !== fFecha) return false;
-    if(fPn && !(r.numero_pieza||'').toLowerCase().includes(fPn)) return false;
-    if(fProveedor && !(r.proveedor_nombre||'').toLowerCase().includes(fProveedor)) return false;
-    if(fSat){
-      const s = r.saturacion;
-      if(fSat==='sin' && s!==null && s!==undefined) return false;
-      if(fSat==='alta' && !(s!==null && s!==undefined && s>=80)) return false;
-      if(fSat==='media' && !(s!==null && s!==undefined && s>=50 && s<80)) return false;
-      if(fSat==='baja' && !(s!==null && s!==undefined && s<50)) return false;
-    }
-    return true;
-  });
-
+  // Últimos controles
   const tbody=document.getElementById('dash-ctrl-body');
-  if(!filtradas.length){
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Sin registros que coincidan</td></tr>';
-    return;
-  }
-  tbody.innerHTML=filtradas.map(r=>`
+  const latest=ctrlRows.slice(0,8);
+  if(!latest.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">Sin registros</td></tr>';return;}
+  tbody.innerHTML=latest.map(r=>`
     <tr>
       <td>${r.fecha||'—'}</td>
       <td><strong>${r.numero_pieza||'—'}</strong></td>
@@ -1375,11 +1214,7 @@ function renderRIAI(d){
 // ── CONTROL ───────────────────────────────────────────────────────────────
 function toggleCtrlForm(show){
   document.getElementById('ctrl-form').style.display=show?'block':'none';
-  if(show){
-    clearCtrlForm();
-    document.getElementById('ctrl-form-title').textContent='Nuevo registro de control';
-    document.getElementById('ctrl-form').scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  if(show){clearCtrlForm();document.getElementById('ctrl-form-title').textContent='Nuevo registro de control';}
 }
 function clearCtrlForm(){
   document.getElementById('ctrl-id').value='';
@@ -1452,40 +1287,6 @@ function removeCtrlImg(key){
   if(key==='abierta') setSatUI(null);
 }
 
-// ── Drag & drop para mover/intercambiar fotos entre casilleros ────────────
-let ctrlDragKey=null;
-function dragCtrlImgStart(e,key){
-  const img=document.getElementById(`prev-ctrl-${key}`);
-  if(!img.src){e.preventDefault();return;} // nada para arrastrar si el casillero está vacío
-  ctrlDragKey=key;
-  e.dataTransfer.effectAllowed='move';
-}
-function dragCtrlImgOver(e){ e.preventDefault(); e.currentTarget.classList.add('img-drop-over'); }
-function dragCtrlImgLeave(e){ e.currentTarget.classList.remove('img-drop-over'); }
-function dropCtrlImg(e,key){
-  e.preventDefault();
-  e.currentTarget.classList.remove('img-drop-over');
-  if(!ctrlDragKey || ctrlDragKey===key){ ctrlDragKey=null; return; }
-  swapCtrlImgs(ctrlDragKey,key);
-  ctrlDragKey=null;
-}
-function swapCtrlImgs(keyA,keyB){
-  const imgA=document.getElementById(`prev-ctrl-${keyA}`), imgB=document.getElementById(`prev-ctrl-${keyB}`);
-  const rmA=document.getElementById(`rm-ctrl-${keyA}`), rmB=document.getElementById(`rm-ctrl-${keyB}`);
-  const srcA=imgA.src, dispA=imgA.style.display, visA=rmA.classList.contains('visible');
-  const srcB=imgB.src, dispB=imgB.style.display, visB=rmB.classList.contains('visible');
-
-  imgA.src=srcB; imgA.style.display=dispB; rmA.classList.toggle('visible',visB);
-  imgB.src=srcA; imgB.style.display=dispA; rmB.classList.toggle('visible',visA);
-
-  // los <input type=file> no se pueden "intercambiar" (por seguridad del navegador),
-  // pero el guardado usa el .src del <img> (base64), así que no hace falta -- se
-  // limpian nomás para que no confundan si se vuelve a tocar el file picker
-  document.getElementById(`up-ctrl-${keyA}`).value='';
-  document.getElementById(`up-ctrl-${keyB}`).value='';
-  toast('Fotos movidas — no te olvides de Guardar');
-}
-
 async function analizarSaturacion(imgSrc){
   const status=document.getElementById('ctrl-sat-status');
   status.textContent='Analizando imagen con IA...';
@@ -1518,7 +1319,7 @@ async function loadControl(q=''){
       <td class="actions">
         <button class="btn btn-outline btn-xs" onclick="viewControl(${r.id})">Ver</button>
         ${canEdit?`<button class="btn btn-secondary btn-xs" onclick="editControl(${r.id})">Editar</button>`:''}
-        ${r.tiene_img_abierta?`<button class="btn btn-info btn-xs" onclick="reAnalizarControl(${r.id})">Analizar</button>`:''}
+        ${r.img_abierta?`<button class="btn btn-info btn-xs" onclick="reAnalizarControl(${r.id})">Analizar</button>`:''}
         ${canDelete?`<button class="btn btn-danger btn-xs" onclick="deleteControl(${r.id})">Eliminar</button>`:''}
       </td>
     </tr>`).join('');
