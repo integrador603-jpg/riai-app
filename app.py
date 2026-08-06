@@ -5,6 +5,16 @@ from auth import verify_user, create_user, init_default_admin, login_required, r
 from excel_io import export_riai_excel, export_proveedores_excel, import_riai_excel, import_proveedores_excel
 from pdf_generator import generate_riai_pdf
 import os
+import sys
+
+# ── FIX libGL en entornos sin GUI (Railway, servidores headless) ─────────
+# Evita que cv2 falle al importar por falta de librerías gráficas del sistema.
+os.environ.setdefault("OPENCV_IO_ENABLE_OPENEXR", "0")
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+try:
+    import cv2  # noqa
+except ImportError:
+    pass
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), "static"))
 app.secret_key = os.environ.get("SECRET_KEY", "cnh-riai-secret-2026")
@@ -121,7 +131,8 @@ def list_riai():
     conn = get_conn()
     rows = conn.execute("""
         SELECT id, fecha, numero_pieza, descripcion,
-               proveedor_nombre, estado, creado_en
+               proveedor_nombre, estado, creado_en,
+               p1_capacidad, p2_capacidad, emb_identico
         FROM riai
         WHERE LOWER(numero_pieza) LIKE ?
            OR LOWER(descripcion)  LIKE ?
@@ -230,11 +241,26 @@ def delete_riai(id):
     conn.close()
     return jsonify({"status": "ok"})
 
-# ── ANÁLISIS DE SATURACIÓN (modelo propio, vía app_saturacion en Railway) ──
+# ── ANÁLISIS DE SATURACIÓN (modelo propio YOLOv8-Seg) ────────────────────
+_yolo_model = None
+
+def get_yolo_model():
+    global _yolo_model
+    if _yolo_model is None:
+        from ultralytics import YOLO
+        model_path = os.path.join(os.path.dirname(__file__), "best.pt")
+        print(f"Cargando modelo YOLO desde {model_path}...", flush=True)
+        _yolo_model = YOLO(model_path)
+        print("✅ Modelo YOLO cargado", flush=True)
+    return _yolo_model
+
+
 @app.route("/api/analizar-saturacion", methods=["POST"])
 @login_required
 def analizar_saturacion():
-    import re, base64, requests
+    import re, base64, io
+    from PIL import Image
+    import numpy as np
 
     d = request.json
     img_b64 = d.get("imagen", "")
@@ -242,70 +268,45 @@ def analizar_saturacion():
         return jsonify({"error": "No se recibió imagen"}), 400
 
     match = re.search(r'base64,(.*)', img_b64)
-    if not match:
-        return jsonify({"error": "Formato de imagen inválido"}), 400
-    raw_b64 = match.group(1)
+    raw_b64 = match.group(1) if match else img_b64
 
-    saturacion_api_url = os.environ.get("SATURACION_API_URL", "")
-    if saturacion_api_url and not saturacion_api_url.startswith(("http://", "https://")):
-        saturacion_api_url = f"https://{saturacion_api_url}"
-    saturacion_api_key = os.environ.get("SATURACION_API_KEY", "")
-    if not saturacion_api_url:
-        return jsonify({"error": "SATURACION_API_URL no configurada"}), 500
+    CLASE_BORDE = "Borde"
+    CLASE_CONTENIDO = "Contenido"
 
     try:
-        imagen_bytes = base64.b64decode(raw_b64)
-    except Exception:
-        return jsonify({"error": "No se pudo decodificar la imagen"}), 400
+        model = get_yolo_model()
+        img_bytes = base64.b64decode(raw_b64)
+        img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        img_np = np.array(img)
 
-    def _llamar_api_saturacion():
-        return requests.post(
-            f"{saturacion_api_url.rstrip('/')}/api/saturacion",
-            files={"foto": ("foto.jpg", imagen_bytes, "image/jpeg")},
-            headers={"X-API-Key": saturacion_api_key} if saturacion_api_key else {},
-            timeout=40,
-        )
+        results = model(img_np, verbose=False)
+        r = results[0]
 
-    import time
-    data = None
-    ultimo_error = None
-    # hasta 2 intentos: el servicio de saturación puede tardar en "despertar"
-    # (cold start) si estuvo un rato sin uso, y la primera petición se pierde
-    for intento in range(2):
-        resp = None
-        try:
-            resp = _llamar_api_saturacion()
-        except requests.exceptions.RequestException as e:
-            ultimo_error = f"No se pudo conectar con el servicio de análisis: {e}"
-            print(f"Error de conexión a app_saturacion (intento {intento + 1}): {repr(e)}", flush=True)
+        if r.masks is None:
+            return jsonify({"error": "No se detectó ninguna región en la imagen"}), 400
 
-        if resp is not None:
-            try:
-                data = resp.json()
-                break
-            except ValueError:
-                # incluye requests.exceptions.JSONDecodeError, que hereda de
-                # RequestException Y de ValueError -- por eso este bloque va
-                # SEPARADO del try de arriba, si no el except de conexión se
-                # lo come primero y perdemos el detalle real del problema
-                ultimo_error = (
-                    f"El servicio de análisis respondió algo inesperado (status {resp.status_code}). "
-                    f"Puede estar caído o reiniciándose."
-                )
-                print(f"Respuesta no-JSON de app_saturacion (intento {intento + 1}). "
-                      f"Status: {resp.status_code}. Body: {resp.text[:300]!r}", flush=True)
+        area_borde = 0
+        area_contenido = 0
+        names = r.names
 
-        if intento == 0:
-            time.sleep(3)  # le da tiempo al contenedor a terminar de levantar
+        for i, cls_id in enumerate(r.boxes.cls.cpu().numpy()):
+            cls_name = names[int(cls_id)]
+            mask = r.masks.data[i].cpu().numpy()
+            area = mask.sum()
+            if cls_name == CLASE_BORDE:
+                area_borde += area
+            elif cls_name == CLASE_CONTENIDO:
+                area_contenido += area
 
-    if data is None:
-        return jsonify({"error": ultimo_error}), 502
+        if area_borde == 0:
+            return jsonify({"error": "No se detectó el borde de la caja"}), 400
 
-    if not data.get("ok"):
-        return jsonify({"error": data.get("detalle", "El modelo no pudo analizar la imagen")}), 400
+        saturacion = min(100, round((area_contenido / area_borde) * 100))
+        return jsonify({"saturacion": int(saturacion)})
 
-    pct = round(data["saturacion"])
-    return jsonify({"saturacion": pct})
+    except Exception as e:
+        print(f"Error análisis saturación: {repr(e)}", flush=True)
+        return jsonify({"error": str(e)}), 500
 
 # ── CONTROL ───────────────────────────────────────────────────────────────
 @app.route("/api/control")
@@ -315,9 +316,7 @@ def list_control():
     conn = get_conn()
     rows = conn.execute("""
         SELECT id, fecha, numero_pieza, proveedor_nombre,
-               largo, ancho, alto, qty_por_caja, saturacion,
-               (img_abierta IS NOT NULL AND img_abierta != '') AS tiene_img_abierta,
-               creado_en
+               largo, ancho, alto, qty_por_caja, creado_en
         FROM control
         WHERE LOWER(numero_pieza) LIKE ?
            OR LOWER(proveedor_nombre) LIKE ?
