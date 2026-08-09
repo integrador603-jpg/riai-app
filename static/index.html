@@ -200,12 +200,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 }
 
 /* ==== Packaging Card (form + preview) ==== */
-<style>
   @page { size: A4 landscape; margin: 8mm; }
 
-  * { box-sizing: border-box; }
+  .sheet * { box-sizing: border-box; }
 
-  body {
+  .sheet body {
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     padding: 10px;
@@ -220,13 +219,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     border: 2px solid #000;
   }
 
-  table {
+  .sheet table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
   }
 
-  td, th {
+  .sheet td, .sheet th {
     border: 1px solid #000;
     padding: 2px 4px;
     font-size: 11px;
@@ -235,25 +234,25 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Title bar ---- */
-  .title-row td {
+  .sheet .title-row td {
     background: #BFBFBF;
     border: 1px solid #000;
   }
-  .mandatory {
+  .sheet .mandatory {
     font-size: 10px;
     font-weight: bold;
     text-align: left;
     vertical-align: top;
     background: #BFBFBF;
   }
-  .title-main {
+  .sheet .title-main {
     text-align: center;
     font-size: 26px;
     font-weight: 800;
     letter-spacing: 1px;
     background: #BFBFBF;
   }
-  .logo-cell {
+  .sheet .logo-cell {
     text-align: right;
     font-size: 26px;
     font-weight: 900;
@@ -263,23 +262,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Dark gray meta bar ---- */
-  .meta-label {
+  .sheet .meta-label {
     background: #595959;
     color: #fff;
     font-weight: bold;
     text-align: left;
   }
-  .meta-input-cell {
+  .sheet .meta-input-cell {
     background: #FFF2CC;
     padding: 0;
   }
-  .meta-blank {
+  .sheet .meta-blank {
     background: #ffffff;
     padding: 0;
   }
 
   /* ---- Section header bars ---- */
-  .section-header td {
+  .sheet .section-header td {
     background: #A6191A;
     color: #fff;
     font-weight: bold;
@@ -289,15 +288,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Field labels ---- */
-  .label-cell {
+  .sheet .label-cell {
     background: #ffffff;
     font-weight: bold;
     text-align: center;
   }
-  .label-cell.left {
+  .sheet .label-cell.left {
     text-align: left;
   }
-  .sub-label {
+  .sheet .sub-label {
     background: #ffffff;
     font-weight: normal;
     text-align: center;
@@ -305,15 +304,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Input cells ---- */
-  .input-cell {
+  .sheet .input-cell {
     background: #FFF2CC;
     padding: 0;
   }
-  .input-cell.white {
+  .sheet .input-cell.white {
     background: #ffffff;
   }
 
-  input.field, select.field {
+  .sheet input.field, .sheet select.field {
     width: 100%;
     height: 100%;
     border: none;
@@ -323,7 +322,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     padding: 3px 4px;
     outline: none;
   }
-  select.field {
+  .sheet select.field {
     -webkit-appearance: menulist;
     appearance: menulist;
     cursor: pointer;
@@ -333,12 +332,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Dynamic behaviour highlight ---- */
-  .req-highlight {
+  .sheet .req-highlight {
     background: #FBE4E4 !important;
     outline: 2px solid #A6191A;
     outline-offset: -2px;
   }
-  .dynamic-hint {
+  .sheet .dynamic-hint {
     font-size: 8.5px;
     font-weight: normal;
     font-style: italic;
@@ -346,16 +345,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   @media print {
-    body { background: none; padding: 0; }
+    .sheet body { background: none; padding: 0; }
     .sheet { border: 2px solid #000; width: 100%; }
     input.field:focus { background: transparent; }
   }
 
   /* ---- Main Packaging Information ---- */
-  .section-header.with-button td {
+  .sheet .section-header.with-button td {
     position: relative;
   }
-  .clean-btn {
+  .sheet .clean-btn {
     background: #E7E7E7;
     color: #000;
     font-weight: bold;
@@ -363,7 +362,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     font-size: 10px;
     border: 1px solid #000;
   }
-  .grey-label {
+  .sheet .grey-label {
     background: #E7E7E7;
     font-weight: bold;
     text-align: center;
@@ -371,110 +370,110 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     vertical-align: middle;
     padding: 6px 8px;
   }
-  .arrow-cell {
+  .sheet .arrow-cell {
     text-align: center;
     color: #A6191A;
     font-size: 28px;
     vertical-align: middle;
   }
-  .desc-text {
+  .sheet .desc-text {
     text-align: center;
     font-size: 12px;
     line-height: 1.7;
     padding: 10px 20px;
     vertical-align: middle;
   }
-  .desc-text b { }
-  .desc-text .yes { color: #1F4E96; font-weight: bold; }
-  .desc-text .no { color: #1F4E96; font-weight: bold; }
+  .sheet .desc-text b { }
+  .sheet .desc-text .yes { color: #1F4E96; font-weight: bold; }
+  .sheet .desc-text .no { color: #1F4E96; font-weight: bold; }
 
   /* ---- Packaging accessories ---- */
-  .grey-subheader {
+  .sheet .grey-subheader {
     background: #A6A6A6;
     color: #000;
     font-weight: bold;
     text-align: center;
     font-size: 11px;
   }
-  .accessories-cell {
+  .sheet .accessories-cell {
     padding: 6px 8px;
     vertical-align: top;
   }
-  .acc-grid {
+  .sheet .acc-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 12px;
     row-gap: 2px;
     font-size: 10.5px;
   }
-  .acc-grid label {
+  .sheet .acc-grid label {
     display: flex;
     align-items: center;
     gap: 5px;
     white-space: nowrap;
   }
-  .acc-grid input[type="checkbox"] {
+  .sheet .acc-grid input[type="checkbox"] {
     margin: 0;
   }
-  .qty-inline {
+  .sheet .qty-inline {
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
-  .qty-box {
+  .sheet .qty-box {
     width: 34px;
     height: 15px;
     background: #FFF2CC;
     border: 1px solid #999;
     display: inline-block;
   }
-  .other-line {
+  .sheet .other-line {
     font-size: 10.5px;
     margin-top: 2px;
   }
-  .inner-layers {
+  .sheet .inner-layers {
     display: flex;
     gap: 8px;
     font-size: 10.5px;
     height: 100%;
   }
-  .il-labels {
+  .sheet .il-labels {
     font-weight: bold;
     display: flex;
     flex-direction: column;
     gap: 6px;
     white-space: nowrap;
   }
-  .il-box {
+  .sheet .il-box {
     flex: 1;
     background: #FFF2CC;
     min-height: 90px;
   }
-  .closure-list {
+  .sheet .closure-list {
     font-size: 10.5px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     padding-top: 10px;
   }
-  .closure-list label {
+  .sheet .closure-list label {
     display: flex;
     align-items: center;
     gap: 5px;
   }
 
   /* ---- Red highlight cell (as in source) ---- */
-  .input-cell.red {
+  .sheet .input-cell.red {
     background: #A6191A;
   }
 
   /* ---- Pictures / Sketch / Layout ---- */
-  .photo-cell {
+  .sheet .photo-cell {
     padding: 0;
     vertical-align: top;
     height: 190px;
   }
-  .photo-drop {
+  .sheet .photo-drop {
     width: 100%;
     height: 100%;
     display: flex;
@@ -485,32 +484,32 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     overflow: hidden;
     background: #fff;
   }
-  .photo-drop input[type="file"] {
+  .sheet .photo-drop input[type="file"] {
     position: absolute;
     inset: 0;
     opacity: 0;
     cursor: pointer;
   }
-  .photo-placeholder {
+  .sheet .photo-placeholder {
     color: #aaa;
     font-size: 11px;
     font-style: italic;
     text-align: center;
     pointer-events: none;
   }
-  .photo-drop img {
+  .sheet .photo-drop img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
   }
 
   /* ---- Final notes ---- */
-  .notes-cell {
+  .sheet .notes-cell {
     padding: 0;
     height: 150px;
     vertical-align: top;
   }
-  textarea.notes-field {
+  .sheet textarea.notes-field {
     width: 100%;
     height: 100%;
     border: none;
@@ -525,7 +524,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   }
 
   /* ---- Compliance note line ---- */
-  .compliance-note td {
+  .sheet .compliance-note td {
     background: #fff;
     text-align: center;
     font-weight: bold;
@@ -535,26 +534,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 
   /* ==== Estilos agregados: bloque dinamico Main Packaging ==== */
 /* ---- Dynamic Yes/No block ---- */
-  .grey-label { background: #E7E7E7; font-weight: bold; text-align: center; font-size: 11px; vertical-align: middle; padding: 6px 8px; }
-  .arrow-cell { text-align: center; color: #A6191A; font-size: 28px; vertical-align: middle; }
-  .desc-text { text-align: center; font-size: 12px; line-height: 1.5; padding: 8px 16px; vertical-align: middle; }
-  .desc-text .yes, .desc-text .no { color: #1F4E96; font-weight: bold; }
-  .same-select { width: 100%; height: 34px; font-size: 13px; font-weight: bold; border: none; background: #FFF2CC; text-align: center; }
+  .sheet .grey-label { background: #E7E7E7; font-weight: bold; text-align: center; font-size: 11px; vertical-align: middle; padding: 6px 8px; }
+  .sheet .arrow-cell { text-align: center; color: #A6191A; font-size: 28px; vertical-align: middle; }
+  .sheet .desc-text { text-align: center; font-size: 12px; line-height: 1.5; padding: 8px 16px; vertical-align: middle; }
+  .sheet .desc-text .yes, .sheet .desc-text .no { color: #1F4E96; font-weight: bold; }
+  .sheet .same-select { width: 100%; height: 34px; font-size: 13px; font-weight: bold; border: none; background: #FFF2CC; text-align: center; }
 
   /* ---- Sub-bloque primario/secundario ---- */
-  .subsection-title td {
+  .sheet .subsection-title td {
     background: #1F4E96; color: #fff; font-weight: bold; text-align: left;
     font-size: 11px; padding: 4px 8px;
   }
-  .pkg-block { display: none; }
-  .pkg-block.activo { display: table-row-group; }
+  .sheet .pkg-block { display: none; }
+  .sheet .pkg-block.activo { display: table-row-group; }
 
-  .grey-subheader { background: #A6A6A6; color: #000; font-weight: bold; text-align: center; font-size: 11px; }
+  .sheet .grey-subheader { background: #A6A6A6; color: #000; font-weight: bold; text-align: center; font-size: 11px; }
 
-  .hint { font-size: 8.5px; font-weight: normal; font-style: italic; color: #A6191A; text-align:center; padding: 2px; }
+  .sheet .hint { font-size: 8.5px; font-weight: normal; font-style: italic; color: #A6191A; text-align:center; padding: 2px; }
 
-  .radio-inline { display:flex; gap:14px; justify-content:center; align-items:center; height:100%; font-size:11px; font-weight:bold; }
-  .radio-inline label { display:flex; align-items:center; gap:4px; cursor:pointer; }
+  .sheet .radio-inline { display:flex; gap:14px; justify-content:center; align-items:center; height:100%; font-size:11px; font-weight:bold; }
+  .sheet .radio-inline label { display:flex; align-items:center; gap:4px; cursor:pointer; }
 
 
 </style>
