@@ -336,7 +336,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     </table>
   </div>
 </div>
-
 <!-- CREATE/EDIT -->
 <div id="page-create" class="page">
   <input type="hidden" id="f-id">
@@ -418,7 +417,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     </div>
 
     <div id="pkg-different">
-      <div class="section-label" id="lbl-prim">Embalaje primario</div>
+      <div class="section-label" id="lbl-prim">Embalaje primario (Parts Package)</div>
       <div class="cond-box">
         <div class="g3">
           <div class="fld"><label id="lbl-e1tipo">Tipo</label>
@@ -434,6 +433,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
               <option>Plástico</option><option>Madera</option><option>Mezcla</option>
             </select>
           </div>
+          <div class="fld"><label>ISPM-15 compliant</label>
+            <select id="f-p1-ispm"><option value="No">No</option><option value="Sí">Sí</option></select>
+          </div>
+          <div class="fld"><label>Property</label><input type="text" id="f-p1-property"></div>
+          <div class="fld"><label>CNH code</label><input type="text" id="f-p1-code"></div>
+          <div class="fld"><label>Other (especificar)</label><input type="text" id="f-p1-other"></div>
           <div class="fld"><label id="lbl-e1desc">Descripción</label><input type="text" id="f-p1-desc"></div>
           <div class="fld"><label id="lbl-e1l">Largo</label><input type="number" id="f-p1-largo" placeholder="0"></div>
           <div class="fld"><label id="lbl-e1w">Ancho</label><input type="number" id="f-p1-ancho" placeholder="0"></div>
@@ -441,8 +446,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="fld"><label id="lbl-e1pv">Peso embalaje</label><input type="number" id="f-p1-pesoemb" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
           <div class="fld"><label id="lbl-e1cap">Capacidad (pcs)</label><input type="number" id="f-p1-cap" placeholder="0" oninput="recalcAll()"></div>
           <div class="fld"><label id="lbl-e1pb">Peso bruto</label><input type="number" id="f-p1-bruto" readonly><div class="auto-tag" id="lbl-auto-bruto">(Cap × Peso) + Peso embalaje</div></div>
-          <div class="fld"><label id="lbl-e1cajascapa">Cajas por capa</label><input type="number" id="f-p1-cajascapa" placeholder="—"><div class="auto-tag">Desde el simulador</div></div>
-          <div class="fld"><label id="lbl-e1capas">Capas</label><input type="number" id="f-p1-capas" placeholder="—"><div class="auto-tag">Desde el simulador</div></div>
+          <div class="fld"><label id="lbl-e1cajascapa">Cajas por capa</label><input type="number" id="f-p1-cajascapa" placeholder="—"><div class="auto-tag">Shipping Unit Config.</div></div>
+          <div class="fld"><label id="lbl-e1capas">Capas</label><input type="number" id="f-p1-capas" placeholder="—"><div class="auto-tag">Shipping Unit Config.</div></div>
         </div>
       </div>
 
@@ -458,12 +463,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       </div>
 
       <div id="p2-pallet">
-        <div class="section-label" id="lbl-sec-pallet">Embalaje secundario — Pallet</div>
+        <div class="section-label" id="lbl-sec-pallet">Embalaje secundario — Pallet (THU)</div>
         <div class="cond-box">
           <div class="g3">
             <div class="fld"><label>Tipo</label><select id="f-p2-tipo-pallet" disabled><option>Pallet</option></select></div>
             <div class="fld"><label>Retornable</label><select id="f-p2-ret-pallet"><option value="No">No</option><option value="Sí">Sí</option></select></div>
             <div class="fld"><label>Material</label><select id="f-p2-mat-pallet"><option>Madera</option><option>Metal</option><option>Plástico</option><option>Mezcla</option></select></div>
+            <div class="fld"><label>ISPM-15 compliant</label><select id="f-p2-ispm-pallet"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+            <div class="fld"><label>Property</label><input type="text" id="f-p2-property-pallet"></div>
+            <div class="fld"><label id="lbl-p2code-pallet">Pallet code</label><input type="text" id="f-p2-code-pallet"></div>
+            <div class="fld"><label>Other (especificar)</label><input type="text" id="f-p2-other-pallet"></div>
             <div class="fld"><label>Descripción</label><input type="text" id="f-p2-desc-pallet"></div>
             <div class="fld"><label>Largo</label><input type="number" id="f-p2-largo-pallet" placeholder="0"></div>
             <div class="fld"><label>Ancho</label><input type="number" id="f-p2-ancho-pallet" placeholder="0"></div>
@@ -471,17 +480,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
             <div class="fld"><label>Peso embalaje</label><input type="number" id="f-p2-pesoemb-pallet" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
             <div class="fld"><label>Capacidad (pcs)</label><input type="number" id="f-p2-cap-pallet" placeholder="0" oninput="recalcAll()"></div>
             <div class="fld"><label>Peso bruto</label><input type="number" id="f-p2-bruto-pallet" readonly><div class="auto-tag">(Cap × Peso) + Peso embalaje</div></div>
+            <div class="fld"><label>Collapsible?</label><select id="f-p2-collapsible-pallet"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+            <div class="fld"><label>Collapsed height</label><input type="number" id="f-p2-collapsed-height-pallet" placeholder="0"></div>
+            <div class="fld"><label>Collapsed stack. layers</label><input type="number" id="f-p2-collapsed-layers-pallet" placeholder="0"></div>
           </div>
         </div>
       </div>
 
       <div id="p2-dentro" style="display:none">
-        <div class="section-label" id="lbl-sec-dentro">Embalaje secundario — Contenedor</div>
+        <div class="section-label" id="lbl-sec-dentro">Embalaje secundario — Contenedor (THU)</div>
         <div class="cond-box">
           <div class="g3">
             <div class="fld"><label>Tipo</label><select id="f-p2-tipo-dentro"><option>Jaula</option><option>Cajón</option><option>Caja palletizada</option><option>Contenedor estándar</option></select></div>
             <div class="fld"><label>Retornable</label><select id="f-p2-ret-dentro"><option value="No">No</option><option value="Sí">Sí</option></select></div>
             <div class="fld"><label>Material</label><select id="f-p2-mat-dentro"><option>Madera</option><option>Metal</option><option>Plástico</option><option>Mezcla</option></select></div>
+            <div class="fld"><label>ISPM-15 compliant</label><select id="f-p2-ispm-dentro"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+            <div class="fld"><label>Property</label><input type="text" id="f-p2-property-dentro"></div>
+            <div class="fld"><label id="lbl-p2code-dentro">CNH code</label><input type="text" id="f-p2-code-dentro"></div>
+            <div class="fld"><label>Other (especificar)</label><input type="text" id="f-p2-other-dentro"></div>
             <div class="fld"><label>Descripción</label><input type="text" id="f-p2-desc-dentro"></div>
             <div class="fld"><label>Largo</label><input type="number" id="f-p2-largo-dentro" placeholder="0"></div>
             <div class="fld"><label>Ancho</label><input type="number" id="f-p2-ancho-dentro" placeholder="0"></div>
@@ -489,18 +505,25 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
             <div class="fld"><label>Peso embalaje</label><input type="number" id="f-p2-pesoemb-dentro" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
             <div class="fld"><label>Capacidad (pcs)</label><input type="number" id="f-p2-cap-dentro" placeholder="0" oninput="recalcAll()"></div>
             <div class="fld"><label>Peso bruto</label><input type="number" id="f-p2-bruto-dentro" readonly><div class="auto-tag">(Cap × Peso) + Peso embalaje</div></div>
+            <div class="fld"><label>Collapsible?</label><select id="f-p2-collapsible-dentro"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+            <div class="fld"><label>Collapsed height</label><input type="number" id="f-p2-collapsed-height-dentro" placeholder="0"></div>
+            <div class="fld"><label>Collapsed stack. layers</label><input type="number" id="f-p2-collapsed-layers-dentro" placeholder="0"></div>
           </div>
         </div>
       </div>
     </div>
 
     <div id="pkg-same" style="display:none">
-      <div class="section-label" id="lbl-unico">Embalaje</div>
+      <div class="section-label" id="lbl-unico">Embalaje (THU único)</div>
       <div class="cond-box">
         <div class="g3">
           <div class="fld"><label>Tipo</label><select id="f-ps-tipo"><option>Jaula</option><option>Cajón</option><option>Pallet</option><option>Caja palletizada</option><option>Contenedor personalizado</option><option>Contenedor estándar</option></select></div>
           <div class="fld"><label>Retornable</label><select id="f-ps-ret"><option value="No">No</option><option value="Sí">Sí</option></select></div>
           <div class="fld"><label>Material</label><select id="f-ps-mat"><option>Madera</option><option>Metal</option><option>Plástico</option><option>Mezcla</option></select></div>
+          <div class="fld"><label>ISPM-15 compliant</label><select id="f-ps-ispm"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+          <div class="fld"><label>Property</label><input type="text" id="f-ps-property"></div>
+          <div class="fld"><label>CNH code</label><input type="text" id="f-ps-code"></div>
+          <div class="fld"><label>Other (especificar)</label><input type="text" id="f-ps-other"></div>
           <div class="fld"><label>Descripción</label><input type="text" id="f-ps-desc"></div>
           <div class="fld"><label>Largo</label><input type="number" id="f-ps-largo" placeholder="0"></div>
           <div class="fld"><label>Ancho</label><input type="number" id="f-ps-ancho" placeholder="0"></div>
@@ -508,7 +531,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
           <div class="fld"><label>Peso embalaje</label><input type="number" id="f-ps-pesoemb" step="0.001" placeholder="0.000" oninput="recalcAll()"></div>
           <div class="fld"><label>Capacidad (pcs)</label><input type="number" id="f-ps-cap" placeholder="0" oninput="recalcAll()"></div>
           <div class="fld"><label>Peso bruto</label><input type="number" id="f-ps-bruto" readonly><div class="auto-tag">(Cap × Peso) + Peso embalaje</div></div>
+          <div class="fld"><label>Collapsible?</label><select id="f-ps-collapsible"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+          <div class="fld"><label>Collapsed height</label><input type="number" id="f-ps-collapsed-height" placeholder="0"></div>
+          <div class="fld"><label>Collapsed stack. layers</label><input type="number" id="f-ps-collapsed-layers" placeholder="0"></div>
         </div>
+      </div>
+    </div>
+
+    <div class="section-label">Shipping Unit Summary — Stackability</div>
+    <div class="cond-box">
+      <div class="g2">
+        <div class="fld"><label>Static stackability</label><input type="number" id="f-su-static" placeholder="0"></div>
+        <div class="fld"><label>Dynamic stackability</label><input type="number" id="f-su-dynamic" placeholder="0"></div>
       </div>
     </div>
   </div>
@@ -764,7 +798,7 @@ let ctrlSuppCache = [];
 
 // ── LANG LABELS ───────────────────────────────────────────────────────────
 const FORM_LABELS = {
-  es:{supplier:'Información del proveedor',suppname:'Nombre del proveedor',suppcod:'Código del proveedor',suppaddr:'Dirección de envío',suppcontact:'Persona de contacto',suppemail:'Email',suppphone:'Teléfono',piece:'Datos de la pieza',pn:'PN',desc:'Descripción',largo:'Largo',ancho:'Ancho',alto:'Alto',peso:'Peso pieza',proyecto:'Proyecto',pkg:'Información principal de embalaje',same:'El embalaje primario y secundario son idénticos',no:'No (son diferentes)',si:'Sí (son idénticos)',prim:'Embalaje primario',unico:'Embalaje',coloc:'Colocación del embalaje primario',colocq:'Los paquetes se colocan',sobre:'Sobre un pallet',dentro:'Dentro de otro embalaje',secpallet:'Embalaje secundario — Pallet',secdentro:'Embalaje secundario — Contenedor',tipo:'Tipo',ret:'Retornable',mat:'Material',desc2:'Descripción',pv:'Peso embalaje',cap:'Capacidad (pcs)',pb:'Peso bruto',cajascapa:'Cajas por capa',capas:'Capas',acc:'Accesorios de embalaje',accdesc:'Descripción de protecciones y materiales de cierre',imgs:'Imágenes',img1:'Caja cerrada',img2:'Caja abierta',img3:'Pieza embalada',imgclick:'Seleccionar imagen',appr:'Aprobaciones',rol:'Rol',nombre:'Nombre',fecha:'Fecha',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprobado por',autosupp:'Se completa automáticamente',autopn:'Automático por PN',autobruto:'(Cap × Peso) + Peso embalaje'},
+  es:{supplier:'Información del proveedor',suppname:'Nombre del proveedor',suppcod:'Código del proveedor',suppaddr:'Dirección de envío',suppcontact:'Persona de contacto',suppemail:'Email',suppphone:'Teléfono',piece:'Datos de la pieza',pn:'PN',desc:'Descripción',largo:'Largo',ancho:'Ancho',alto:'Alto',peso:'Peso pieza',proyecto:'Proyecto',pkg:'Información principal de embalaje',same:'El embalaje primario y secundario son idénticos',no:'No (son diferentes)',si:'Sí (son idénticos)',prim:'Embalaje primario (Parts Package)',unico:'Embalaje (THU único)',coloc:'Colocación del embalaje primario',colocq:'Los paquetes se colocan',sobre:'Sobre un pallet',dentro:'Dentro de otro embalaje',secpallet:'Embalaje secundario — Pallet (THU)',secdentro:'Embalaje secundario — Contenedor (THU)',tipo:'Tipo',ret:'Retornable',mat:'Material',desc2:'Descripción',pv:'Peso embalaje',cap:'Capacidad (pcs)',pb:'Peso bruto',cajascapa:'Cajas por capa',capas:'Capas',acc:'Accesorios de embalaje',accdesc:'Descripción de protecciones y materiales de cierre',imgs:'Imágenes',img1:'Caja cerrada',img2:'Caja abierta',img3:'Pieza embalada',imgclick:'Seleccionar imagen',appr:'Aprobaciones',rol:'Rol',nombre:'Nombre',fecha:'Fecha',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprobado por',autosupp:'Se completa automáticamente',autopn:'Automático por PN',autobruto:'(Cap × Peso) + Peso embalaje'},
   pt:{supplier:'Informações do Fornecedor',suppname:'Nome do Fornecedor',suppcod:'Código do Fornecedor',suppaddr:'Endereço de Envio',suppcontact:'Pessoa de Contato',suppemail:'E-mail',suppphone:'Telefone',piece:'Dados da Peça',pn:'PN',desc:'Descrição',largo:'Comprimento',ancho:'Largura',alto:'Altura',peso:'Peso da Peça',projeto:'Projeto',pkg:'Informações Principais da Embalagem',same:'A embalagem primária e secundária são idênticas',no:'Não (são diferentes)',si:'Sim (são idênticas)',prim:'Embalagem Primária',unico:'Embalagem',coloc:'Posicionamento da embalagem primária',colocq:'Os pacotes são colocados',sobre:'Sobre um palete',dentro:'Dentro de outro tipo de embalagem',secpallet:'Embalagem Secundária — Palete',secdentro:'Embalagem Secundária — Contentor',tipo:'Tipo',ret:'Retornável',mat:'Material',desc2:'Descrição',pv:'Peso embalagem',cap:'Capacidade (pcs)',pb:'Peso bruto',cajascapa:'Caixas por camada',capas:'Camadas',acc:'Acessórios de Embalagem',accdesc:'Descrição de proteções e materiais de fechamento',imgs:'Imagens',img1:'Caixa fechada',img2:'Caixa aberta',img3:'Peça embalada',imgclick:'Selecionar imagem',appr:'Aprovação',rol:'Departamento',nombre:'Nome',fecha:'Data',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprovado por',autosupp:'Preenchido automaticamente',autopn:'Automático pelo PN',autobruto:'(Cap × Peso) + Peso embalagem'},
   en:{supplier:'Supplier Information',suppname:'Supplier name',suppcod:'Supplier code',suppaddr:'Shipping address',suppcontact:'Contact person',suppemail:'Email',suppphone:'Phone',piece:'Part Data',pn:'PN',desc:'Description',largo:'Length',ancho:'Width',alto:'Height',peso:'Part weight',proyecto:'Project',pkg:'Main Packaging Information',same:'Primary and secondary packaging are identical',no:'No (they are different)',si:'Yes (they are identical)',prim:'Primary Packaging',unico:'Packaging',coloc:'Primary packaging placement',colocq:'Packages are placed',sobre:'On a pallet',dentro:'Inside another type of packaging',secpallet:'Secondary Packaging — Pallet',secdentro:'Secondary Packaging — Container',tipo:'Type',ret:'Returnable',mat:'Material',desc2:'Description',pv:'Packaging weight',cap:'Capacity (pcs)',pb:'Gross weight',cajascapa:'Boxes per layer',capas:'Layers',acc:'Packaging Accessories',accdesc:'Description of protections and closing materials',imgs:'Images',img1:'Closed box',img2:'Open box',img3:'Packed part',imgclick:'Select image',appr:'Approval',rol:'Department',nombre:'Name',fecha:'Date',elaborado:'Prepared by',revisado:'Reviewed by',aprobado:'Approved by',autosupp:'Filled automatically',autopn:'Automatic by PN',autobruto:'(Cap × Weight) + Pkg weight'},
 };
@@ -1136,28 +1170,59 @@ function collectForm(){
     largo:g('f-largo')||null,ancho:g('f-ancho')||null,alto:g('f-alto')||null,
     peso:g('f-peso')||null,moq:g('f-moq')||null,proyecto:g('f-proyecto'),
     emb_identico:same?1:0,colocacion:coloc,
+
+    // Embalaje primario (Parts Package)
     p1_tipo:g('f-p1-tipo'),p1_retornable:g('f-p1-ret'),p1_material:g('f-p1-mat'),p1_descripcion:g('f-p1-desc'),
     p1_largo:g('f-p1-largo')||null,p1_ancho:g('f-p1-ancho')||null,p1_alto:g('f-p1-alto')||null,
     p1_peso_emb:g('f-p1-pesoemb')||null,p1_capacidad:g('f-p1-cap')||null,p1_peso_bruto:g('f-p1-bruto')||null,
     p1_cajas_capa:g('f-p1-cajascapa')||null,p1_capas:g('f-p1-capas')||null,
-    p2_tipo:same?g('f-ps-tipo'):p2tipo,p2_retornable:same?g('f-ps-ret'):g(`f-p2-ret${p2sfx}`),
-    p2_material:same?g('f-ps-mat'):g(`f-p2-mat${p2sfx}`),p2_descripcion:same?g('f-ps-desc'):g(`f-p2-desc${p2sfx}`),
+    p1_ispm:g('f-p1-ispm'),p1_property:g('f-p1-property'),p1_code:g('f-p1-code'),p1_other:g('f-p1-other'),
+
+    // Embalaje secundario (THU) -- toma del bloque pallet o dentro segun colocacion,
+    // o del bloque unico (ps) si emb_identico=Sí
+    p2_tipo:same?g('f-ps-tipo'):p2tipo,
+    p2_retornable:same?g('f-ps-ret'):g(`f-p2-ret${p2sfx}`),
+    p2_material:same?g('f-ps-mat'):g(`f-p2-mat${p2sfx}`),
+    p2_descripcion:same?g('f-ps-desc'):g(`f-p2-desc${p2sfx}`),
     p2_largo:same?g('f-ps-largo')||null:g(`f-p2-largo${p2sfx}`)||null,
     p2_ancho:same?g('f-ps-ancho')||null:g(`f-p2-ancho${p2sfx}`)||null,
     p2_alto:same?g('f-ps-alto')||null:g(`f-p2-alto${p2sfx}`)||null,
     p2_peso_emb:same?g('f-ps-pesoemb')||null:g(`f-p2-pesoemb${p2sfx}`)||null,
     p2_capacidad:same?g('f-ps-cap')||null:g(`f-p2-cap${p2sfx}`)||null,
     p2_peso_bruto:same?g('f-ps-bruto')||null:g(`f-p2-bruto${p2sfx}`)||null,
+    p2_ispm:same?g('f-ps-ispm'):g(`f-p2-ispm${p2sfx}`),
+    p2_property:same?g('f-ps-property'):g(`f-p2-property${p2sfx}`),
+    p2_code:same?g('f-ps-code'):g(`f-p2-code${p2sfx}`),
+    p2_other:same?g('f-ps-other'):g(`f-p2-other${p2sfx}`),
+    p2_collapsible:same?g('f-ps-collapsible'):g(`f-p2-collapsible${p2sfx}`),
+    p2_collapsed_height:same?g('f-ps-collapsed-height')||null:g(`f-p2-collapsed-height${p2sfx}`)||null,
+    p2_collapsed_layers:same?g('f-ps-collapsed-layers')||null:g(`f-p2-collapsed-layers${p2sfx}`)||null,
+
+    // THU único (solo tiene sentido cuando emb_identico=Sí, pero se manda siempre
+    // para no perder datos si el usuario tipeó algo y despues cambio el radio)
+    ps_tipo:g('f-ps-tipo'),ps_retornable:g('f-ps-ret'),ps_material:g('f-ps-mat'),ps_descripcion:g('f-ps-desc'),
+    ps_largo:g('f-ps-largo')||null,ps_ancho:g('f-ps-ancho')||null,ps_alto:g('f-ps-alto')||null,
+    ps_peso_emb:g('f-ps-pesoemb')||null,ps_capacidad:g('f-ps-cap')||null,ps_peso_bruto:g('f-ps-bruto')||null,
+    ps_ispm:g('f-ps-ispm'),ps_property:g('f-ps-property'),ps_code:g('f-ps-code'),ps_other:g('f-ps-other'),
+    ps_collapsible:g('f-ps-collapsible'),
+    ps_collapsed_height:g('f-ps-collapsed-height')||null,
+    ps_collapsed_layers:g('f-ps-collapsed-layers')||null,
+
+    // Shipping Unit Summary
+    su_static:g('f-su-static')||null,su_dynamic:g('f-su-dynamic')||null,
+
     accesorios:g('f-accesorios'),
     img_caja:gi('prev-caja'),img_abierta:gi('prev-abierta'),img_embalada:gi('prev-embalada'),img_paletizado:null,
     ap_elaborado_nombre:g('ap-elab-nombre'),ap_elaborado_fecha:g('ap-elab-fecha'),
     ap_revisado_nombre:g('ap-rev-nombre'),ap_revisado_fecha:g('ap-rev-fecha'),
     ap_aprobado_nombre:g('ap-apr-nombre'),ap_aprobado_fecha:g('ap-apr-fecha'),
     estado:g('f-estado'),
+
+    // ── datos auxiliares solo para armar la vista previa (renderRIAI) ──
     same,lang:g('f-lang'),ul:g('f-unit-len'),uw:g('f-unit-wt'),
-    pkg:same?{tipo:g('f-ps-tipo'),ret:g('f-ps-ret'),mat:g('f-ps-mat'),desc:g('f-ps-desc'),largo:g('f-ps-largo'),ancho:g('f-ps-ancho'),alto:g('f-ps-alto'),pesoemb:g('f-ps-pesoemb'),cap:g('f-ps-cap'),bruto:g('f-ps-bruto')}:null,
-    p1:!same?{tipo:g('f-p1-tipo'),ret:g('f-p1-ret'),mat:g('f-p1-mat'),desc:g('f-p1-desc'),largo:g('f-p1-largo'),ancho:g('f-p1-ancho'),alto:g('f-p1-alto'),pesoemb:g('f-p1-pesoemb'),cap:g('f-p1-cap'),bruto:g('f-p1-bruto'),cajascapa:g('f-p1-cajascapa'),capas:g('f-p1-capas')}:null,
-    p2:!same?{tipo:p2tipo,ret:g(`f-p2-ret${p2sfx}`),mat:g(`f-p2-mat${p2sfx}`),desc:g(`f-p2-desc${p2sfx}`),largo:g(`f-p2-largo${p2sfx}`),ancho:g(`f-p2-ancho${p2sfx}`),alto:g(`f-p2-alto${p2sfx}`),pesoemb:g(`f-p2-pesoemb${p2sfx}`),cap:g(`f-p2-cap${p2sfx}`),bruto:g(`f-p2-bruto${p2sfx}`)}:null,
+    pkg:same?{tipo:g('f-ps-tipo'),ret:g('f-ps-ret'),mat:g('f-ps-mat'),desc:g('f-ps-desc'),largo:g('f-ps-largo'),ancho:g('f-ps-ancho'),alto:g('f-ps-alto'),pesoemb:g('f-ps-pesoemb'),cap:g('f-ps-cap'),bruto:g('f-ps-bruto'),ispm:g('f-ps-ispm'),property:g('f-ps-property'),code:g('f-ps-code'),other:g('f-ps-other'),collapsible:g('f-ps-collapsible'),collheight:g('f-ps-collapsed-height'),colllayers:g('f-ps-collapsed-layers')}:null,
+    p1:!same?{tipo:g('f-p1-tipo'),ret:g('f-p1-ret'),mat:g('f-p1-mat'),desc:g('f-p1-desc'),largo:g('f-p1-largo'),ancho:g('f-p1-ancho'),alto:g('f-p1-alto'),pesoemb:g('f-p1-pesoemb'),cap:g('f-p1-cap'),bruto:g('f-p1-bruto'),cajascapa:g('f-p1-cajascapa'),capas:g('f-p1-capas'),ispm:g('f-p1-ispm'),property:g('f-p1-property'),code:g('f-p1-code'),other:g('f-p1-other')}:null,
+    p2:!same?{tipo:p2tipo,ret:g(`f-p2-ret${p2sfx}`),mat:g(`f-p2-mat${p2sfx}`),desc:g(`f-p2-desc${p2sfx}`),largo:g(`f-p2-largo${p2sfx}`),ancho:g(`f-p2-ancho${p2sfx}`),alto:g(`f-p2-alto${p2sfx}`),pesoemb:g(`f-p2-pesoemb${p2sfx}`),cap:g(`f-p2-cap${p2sfx}`),bruto:g(`f-p2-bruto${p2sfx}`),ispm:g(`f-p2-ispm${p2sfx}`),property:g(`f-p2-property${p2sfx}`),code:g(`f-p2-code${p2sfx}`),other:g(`f-p2-other${p2sfx}`),collapsible:g(`f-p2-collapsible${p2sfx}`),collheight:g(`f-p2-collapsed-height${p2sfx}`),colllayers:g(`f-p2-collapsed-layers${p2sfx}`)}:null,
     ap:{elaboradoNombre:g('ap-elab-nombre'),elaboradoFecha:g('ap-elab-fecha'),revisadoNombre:g('ap-rev-nombre'),revisadoFecha:g('ap-rev-fecha'),aprobadoNombre:g('ap-apr-nombre'),aprobadoFecha:g('ap-apr-fecha')},
     imgs:{caja:gi('prev-caja'),abierta:gi('prev-abierta'),embalada:gi('prev-embalada')},
   };
@@ -1188,7 +1253,7 @@ async function editRIAI(id){
   if(!d){toast('Error al cargar',false);return;}
   navTo('create',document.getElementById('nav-create'));
   setTimeout(()=>{
-    const s=v=>v||'';
+    const s=v=>v===null||v===undefined?'':v;
     document.getElementById('f-id').value=d.id;
     document.getElementById('form-title').textContent='Editar RIAI';
     document.getElementById('f-date').value=s(d.fecha);
@@ -1210,43 +1275,73 @@ async function editRIAI(id){
     document.getElementById('f-peso').value=s(d.peso);
     document.getElementById('f-moq').value=s(d.moq);
     document.getElementById('f-proyecto').value=s(d.proyecto);
+
     const same=d.emb_identico===1;
     const coloc=d.colocacion||'pallet';
     document.querySelector(`input[name="same-pkg"][value="${same?'si':'no'}"]`).checked=true;
     onSamePkgChange();
     document.querySelector(`input[name="colocacion"][value="${coloc}"]`).checked=true;
     onColocacionChange();
-    if(same){
-      document.getElementById('f-ps-tipo').value=s(d.p2_tipo);
-      document.getElementById('f-ps-ret').value=s(d.p2_retornable)||'No';
-      document.getElementById('f-ps-mat').value=s(d.p2_material)||'Madera';
-      document.getElementById('f-ps-desc').value=s(d.p2_descripcion);
-      document.getElementById('f-ps-largo').value=s(d.p2_largo);
-      document.getElementById('f-ps-ancho').value=s(d.p2_ancho);
-      document.getElementById('f-ps-alto').value=s(d.p2_alto);
-      document.getElementById('f-ps-pesoemb').value=s(d.p2_peso_emb);
-      document.getElementById('f-ps-cap').value=s(d.p2_capacidad);
-      document.getElementById('f-ps-bruto').value=s(d.p2_peso_bruto);
-    }else{
-      document.getElementById('f-p1-tipo').value=s(d.p1_tipo)||'Caja';
-      document.getElementById('f-p1-ret').value=s(d.p1_retornable)||'No';
-      document.getElementById('f-p1-mat').value=s(d.p1_material)||'Cartón de pared simple';
-      document.getElementById('f-p1-desc').value=s(d.p1_descripcion);
-      document.getElementById('f-p1-largo').value=s(d.p1_largo);
-      document.getElementById('f-p1-ancho').value=s(d.p1_ancho);
-      document.getElementById('f-p1-alto').value=s(d.p1_alto);
-      document.getElementById('f-p1-pesoemb').value=s(d.p1_peso_emb);
-      document.getElementById('f-p1-cap').value=s(d.p1_capacidad);
-      document.getElementById('f-p1-bruto').value=s(d.p1_peso_bruto);
-      document.getElementById('f-p1-cajascapa').value=s(d.p1_cajas_capa);
-      document.getElementById('f-p1-capas').value=s(d.p1_capas);
-      const sfx=coloc==='pallet'?'-pallet':'-dentro';
-      if(coloc!=='pallet') document.getElementById('f-p2-tipo-dentro').value=s(d.p2_tipo)||'Jaula';
-      ['ret','mat','desc','largo','ancho','alto','pesoemb','cap','bruto'].forEach(f=>{
-        const el=document.getElementById(`f-p2-${f}${sfx}`);
-        if(el) el.value=s(d[`p2_${f==='pesoemb'?'peso_emb':f==='cap'?'capacidad':f==='bruto'?'peso_bruto':f}`]);
-      });
-    }
+
+    // Embalaje primario (Parts Package)
+    document.getElementById('f-p1-tipo').value=s(d.p1_tipo)||'Caja';
+    document.getElementById('f-p1-ret').value=s(d.p1_retornable)||'No';
+    document.getElementById('f-p1-mat').value=s(d.p1_material)||'Cartón de pared simple';
+    document.getElementById('f-p1-desc').value=s(d.p1_descripcion);
+    document.getElementById('f-p1-largo').value=s(d.p1_largo);
+    document.getElementById('f-p1-ancho').value=s(d.p1_ancho);
+    document.getElementById('f-p1-alto').value=s(d.p1_alto);
+    document.getElementById('f-p1-pesoemb').value=s(d.p1_peso_emb);
+    document.getElementById('f-p1-cap').value=s(d.p1_capacidad);
+    document.getElementById('f-p1-bruto').value=s(d.p1_peso_bruto);
+    document.getElementById('f-p1-cajascapa').value=s(d.p1_cajas_capa);
+    document.getElementById('f-p1-capas').value=s(d.p1_capas);
+    document.getElementById('f-p1-ispm').value=s(d.p1_ispm)||'No';
+    document.getElementById('f-p1-property').value=s(d.p1_property);
+    document.getElementById('f-p1-code').value=s(d.p1_code);
+    document.getElementById('f-p1-other').value=s(d.p1_other);
+
+    // THU secundario -- se restaura en los DOS bloques (pallet y dentro), asi
+    // si el usuario cambia de "colocacion" despues de editar no pierde nada
+    ['-pallet','-dentro'].forEach(sfx=>{
+      const tipoEl=document.getElementById(`f-p2-tipo${sfx}`);
+      if(tipoEl && !tipoEl.disabled) tipoEl.value=s(d.p2_tipo)||'Jaula';
+      const set=(campo,val)=>{const el=document.getElementById(`f-p2-${campo}${sfx}`);if(el) el.value=val;};
+      set('ret',s(d.p2_retornable)||'No');
+      set('mat',s(d.p2_material)||'Madera');
+      set('desc',s(d.p2_descripcion));
+      set('largo',s(d.p2_largo));set('ancho',s(d.p2_ancho));set('alto',s(d.p2_alto));
+      set('pesoemb',s(d.p2_peso_emb));set('cap',s(d.p2_capacidad));set('bruto',s(d.p2_peso_bruto));
+      set('ispm',s(d.p2_ispm)||'No');set('property',s(d.p2_property));
+      set('code',s(d.p2_code));set('other',s(d.p2_other));
+      set('collapsible',s(d.p2_collapsible)||'No');
+      set('collapsed-height',s(d.p2_collapsed_height));
+      set('collapsed-layers',s(d.p2_collapsed_layers));
+    });
+
+    // THU único (caso "idéntico")
+    document.getElementById('f-ps-tipo').value=s(d.ps_tipo)||'Jaula';
+    document.getElementById('f-ps-ret').value=s(d.ps_retornable)||'No';
+    document.getElementById('f-ps-mat').value=s(d.ps_material)||'Madera';
+    document.getElementById('f-ps-desc').value=s(d.ps_descripcion);
+    document.getElementById('f-ps-largo').value=s(d.ps_largo);
+    document.getElementById('f-ps-ancho').value=s(d.ps_ancho);
+    document.getElementById('f-ps-alto').value=s(d.ps_alto);
+    document.getElementById('f-ps-pesoemb').value=s(d.ps_peso_emb);
+    document.getElementById('f-ps-cap').value=s(d.ps_capacidad);
+    document.getElementById('f-ps-bruto').value=s(d.ps_peso_bruto);
+    document.getElementById('f-ps-ispm').value=s(d.ps_ispm)||'No';
+    document.getElementById('f-ps-property').value=s(d.ps_property);
+    document.getElementById('f-ps-code').value=s(d.ps_code);
+    document.getElementById('f-ps-other').value=s(d.ps_other);
+    document.getElementById('f-ps-collapsible').value=s(d.ps_collapsible)||'No';
+    document.getElementById('f-ps-collapsed-height').value=s(d.ps_collapsed_height);
+    document.getElementById('f-ps-collapsed-layers').value=s(d.ps_collapsed_layers);
+
+    // Shipping Unit Summary
+    document.getElementById('f-su-static').value=s(d.su_static);
+    document.getElementById('f-su-dynamic').value=s(d.su_dynamic);
+
     document.getElementById('f-accesorios').value=s(d.accesorios);
     document.getElementById('ap-elab-nombre').value=s(d.ap_elaborado_nombre);
     document.getElementById('ap-elab-fecha').value=s(d.ap_elaborado_fecha);
@@ -1286,9 +1381,10 @@ async function viewRIAI(id){
     ap:{elaboradoNombre:d.ap_elaborado_nombre,elaboradoFecha:d.ap_elaborado_fecha,
         revisadoNombre:d.ap_revisado_nombre,revisadoFecha:d.ap_revisado_fecha,
         aprobadoNombre:d.ap_aprobado_nombre,aprobadoFecha:d.ap_aprobado_fecha},
-    pkg:same?{tipo:d.p2_tipo,ret:d.p2_retornable,mat:d.p2_material,desc:d.p2_descripcion,largo:d.p2_largo,ancho:d.p2_ancho,alto:d.p2_alto,pesoemb:d.p2_peso_emb,cap:d.p2_capacidad,bruto:d.p2_peso_bruto}:null,
-    p1:!same?{tipo:d.p1_tipo,ret:d.p1_retornable,mat:d.p1_material,desc:d.p1_descripcion,largo:d.p1_largo,ancho:d.p1_ancho,alto:d.p1_alto,pesoemb:d.p1_peso_emb,cap:d.p1_capacidad,bruto:d.p1_peso_bruto,cajascapa:d.p1_cajas_capa,capas:d.p1_capas}:null,
-    p2:!same?{tipo:d.p2_tipo,ret:d.p2_retornable,mat:d.p2_material,desc:d.p2_descripcion,largo:d.p2_largo,ancho:d.p2_ancho,alto:d.p2_alto,pesoemb:d.p2_peso_emb,cap:d.p2_capacidad,bruto:d.p2_peso_bruto}:null,
+    pkg:same?{tipo:d.ps_tipo,ret:d.ps_retornable,mat:d.ps_material,desc:d.ps_descripcion,largo:d.ps_largo,ancho:d.ps_ancho,alto:d.ps_alto,pesoemb:d.ps_peso_emb,cap:d.ps_capacidad,bruto:d.ps_peso_bruto,ispm:d.ps_ispm,property:d.ps_property,code:d.ps_code,other:d.ps_other,collapsible:d.ps_collapsible,collheight:d.ps_collapsed_height,colllayers:d.ps_collapsed_layers}:null,
+    p1:!same?{tipo:d.p1_tipo,ret:d.p1_retornable,mat:d.p1_material,desc:d.p1_descripcion,largo:d.p1_largo,ancho:d.p1_ancho,alto:d.p1_alto,pesoemb:d.p1_peso_emb,cap:d.p1_capacidad,bruto:d.p1_peso_bruto,cajascapa:d.p1_cajas_capa,capas:d.p1_capas,ispm:d.p1_ispm,property:d.p1_property,code:d.p1_code,other:d.p1_other}:null,
+    p2:!same?{tipo:d.p2_tipo,ret:d.p2_retornable,mat:d.p2_material,desc:d.p2_descripcion,largo:d.p2_largo,ancho:d.p2_ancho,alto:d.p2_alto,pesoemb:d.p2_peso_emb,cap:d.p2_capacidad,bruto:d.p2_peso_bruto,ispm:d.p2_ispm,property:d.p2_property,code:d.p2_code,other:d.p2_other,collapsible:d.p2_collapsible,collheight:d.p2_collapsed_height,colllayers:d.p2_collapsed_layers}:null,
+    su:{static:d.su_static,dynamic:d.su_dynamic},
   };
   document.getElementById('riai-preview-content').innerHTML=renderRIAI(rd);
   document.getElementById('modal-preview').classList.add('open');
@@ -1297,6 +1393,7 @@ async function viewRIAI(id){
 
 function previewRIAI(){
   const d=collectForm();
+  d.su={static:d.su_static,dynamic:d.su_dynamic};
   document.getElementById('riai-preview-content').innerHTML=renderRIAI(d);
   document.getElementById('modal-preview').classList.add('open');
   window.__currentPreviewId=document.getElementById('f-id').value||null;
@@ -1310,9 +1407,9 @@ function downloadPdf(){
 
 // ── RENDER RIAI ───────────────────────────────────────────────────────────
 const RLABELS={
-  es:{title:'RIAI — INSTRUCCIÓN DE EMBALAJE',supplier:'Información del proveedor',piece:'Datos de la pieza',prim:'Embalaje Primario',sec:'Embalaje Secundario',unico:'Embalaje',acc:'Accesorios',imgs:'Imágenes',appr:'Aprobaciones',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprobado por',fecha:'Fecha',pn:'PN',desc:'Descripción',largo:'Largo',ancho:'Ancho',alto:'Alto',peso:'Peso',moq:'MOQ',proyecto:'Proyecto',tipo:'Tipo',ret:'Retornable',mat:'Material',cap:'Capacidad',pesoemb:'Peso embalaje',bruto:'Peso bruto',cajascapa:'Cajas/capa',capas:'Capas',cod:'Código',addr:'Dirección',contact:'Contacto',email:'Email',phone:'Teléfono',img1:'Caja cerrada',img2:'Caja abierta',img3:'Pieza embalada'},
-  pt:{title:'RIAI — INSTRUÇÃO DE EMBALAGEM',supplier:'Informações do Fornecedor',piece:'Dados da Peça',prim:'Embalagem Primária',sec:'Embalagem Secundária',unico:'Embalagem',acc:'Acessórios',imgs:'Imagens',appr:'Aprovações',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprovado por',fecha:'Data',pn:'PN',desc:'Descrição',largo:'Comprimento',ancho:'Largura',alto:'Altura',peso:'Peso',moq:'MOQ',projeto:'Projeto',tipo:'Tipo',ret:'Retornável',mat:'Material',cap:'Capacidade',pesoemb:'Peso embalagem',bruto:'Peso bruto',cajascapa:'Caixas/camada',capas:'Camadas',cod:'Código',addr:'Endereço',contact:'Contato',email:'Email',phone:'Telefone',img1:'Caixa fechada',img2:'Caixa aberta',img3:'Peça embalada'},
-  en:{title:'RIAI — PACKAGING INSTRUCTION',supplier:'Supplier Information',piece:'Part Data',prim:'Primary Packaging',sec:'Secondary Packaging',unico:'Packaging',acc:'Accessories',imgs:'Images',appr:'Approvals',elaborado:'Prepared by',revisado:'Reviewed by',aprobado:'Approved by',fecha:'Date',pn:'PN',desc:'Description',largo:'Length',ancho:'Width',alto:'Height',peso:'Weight',moq:'MOQ',proyecto:'Project',tipo:'Type',ret:'Returnable',mat:'Material',cap:'Capacity',pesoemb:'Pkg weight',bruto:'Gross weight',cajascapa:'Boxes/layer',capas:'Layers',cod:'Code',addr:'Address',contact:'Contact',email:'Email',phone:'Phone',img1:'Closed box',img2:'Open box',img3:'Packed part'},
+  es:{title:'RIAI — INSTRUCCIÓN DE EMBALAJE',supplier:'Información del proveedor',piece:'Datos de la pieza',prim:'Embalaje Primario (Parts Package)',sec:'Embalaje Secundario (THU)',unico:'Embalaje (THU único)',acc:'Accesorios',imgs:'Imágenes',appr:'Aprobaciones',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprobado por',fecha:'Fecha',pn:'PN',desc:'Descripción',largo:'Largo',ancho:'Ancho',alto:'Alto',peso:'Peso',moq:'MOQ',proyecto:'Proyecto',tipo:'Tipo',ret:'Retornable',mat:'Material',cap:'Capacidad',pesoemb:'Peso embalaje',bruto:'Peso bruto',cajascapa:'Cajas/capa',capas:'Capas',cod:'Código',addr:'Dirección',contact:'Contacto',email:'Email',phone:'Teléfono',img1:'Caja cerrada',img2:'Caja abierta',img3:'Pieza embalada',ispm:'ISPM-15',property:'Property',code2:'Code',other:'Other',collapsible:'Collapsible',collheight:'Collapsed h.',colllayers:'Collapsed layers',su:'Stackability',static:'Static',dynamic:'Dynamic'},
+  pt:{title:'RIAI — INSTRUÇÃO DE EMBALAGEM',supplier:'Informações do Fornecedor',piece:'Dados da Peça',prim:'Embalagem Primária',sec:'Embalagem Secundária',unico:'Embalagem',acc:'Acessórios',imgs:'Imagens',appr:'Aprovações',elaborado:'Elaborado por',revisado:'Revisado por',aprobado:'Aprovado por',fecha:'Data',pn:'PN',desc:'Descrição',largo:'Comprimento',ancho:'Largura',alto:'Altura',peso:'Peso',moq:'MOQ',projeto:'Projeto',tipo:'Tipo',ret:'Retornável',mat:'Material',cap:'Capacidade',pesoemb:'Peso embalagem',bruto:'Peso bruto',cajascapa:'Caixas/camada',capas:'Camadas',cod:'Código',addr:'Endereço',contact:'Contato',email:'Email',phone:'Telefone',img1:'Caixa fechada',img2:'Caixa aberta',img3:'Peça embalada',ispm:'ISPM-15',property:'Property',code2:'Code',other:'Other',collapsible:'Collapsible',collheight:'Collapsed h.',colllayers:'Collapsed layers',su:'Stackability',static:'Static',dynamic:'Dynamic'},
+  en:{title:'RIAI — PACKAGING INSTRUCTION',supplier:'Supplier Information',piece:'Part Data',prim:'Primary Packaging',sec:'Secondary Packaging',unico:'Packaging',acc:'Accessories',imgs:'Images',appr:'Approvals',elaborado:'Prepared by',revisado:'Reviewed by',aprobado:'Approved by',fecha:'Date',pn:'PN',desc:'Description',largo:'Length',ancho:'Width',alto:'Height',peso:'Weight',moq:'MOQ',proyecto:'Project',tipo:'Type',ret:'Returnable',mat:'Material',cap:'Capacity',pesoemb:'Pkg weight',bruto:'Gross weight',cajascapa:'Boxes/layer',capas:'Layers',cod:'Code',addr:'Address',contact:'Contact',email:'Email',phone:'Phone',img1:'Closed box',img2:'Open box',img3:'Packed part',ispm:'ISPM-15',property:'Property',code2:'Code',other:'Other',collapsible:'Collapsible',collheight:'Collapsed h.',colllayers:'Collapsed layers',su:'Stackability',static:'Static',dynamic:'Dynamic'},
 };
 function renderRIAI(d){
   const L=RLABELS[d.lang]||RLABELS.es;
@@ -1329,10 +1426,22 @@ function renderRIAI(d){
       <td>${fv(L.cap,pkg?.cap)}</td>
     </tr>
     <tr>
-      <td colspan="4">${fv(L.bruto+' ('+uw+')',pkg?.bruto)}</td>
-      <td colspan="3">${pkg?.cajascapa?fv(L.cajascapa,pkg.cajascapa):''}</td>
-      <td colspan="3">${pkg?.capas?fv(L.capas,pkg.capas):''}</td>
-    </tr>`;
+      <td colspan="3">${fv(L.bruto+' ('+uw+')',pkg?.bruto)}</td>
+      <td colspan="2">${pkg?.cajascapa?fv(L.cajascapa,pkg.cajascapa):''}</td>
+      <td colspan="2">${pkg?.capas?fv(L.capas,pkg.capas):''}</td>
+      <td colspan="3">${fv(L.ispm,pkg?.ispm)}</td>
+    </tr>
+    <tr>
+      <td colspan="3">${fv(L.property,pkg?.property)}</td>
+      <td colspan="3">${fv(L.code2,pkg?.code)}</td>
+      <td colspan="4">${fv(L.other,pkg?.other)}</td>
+    </tr>
+    ${(pkg?.collapsible||pkg?.collheight||pkg?.colllayers)?`
+    <tr>
+      <td colspan="4">${fv(L.collapsible,pkg?.collapsible)}</td>
+      <td colspan="3">${fv(L.collheight+' ('+ul+')',pkg?.collheight)}</td>
+      <td colspan="3">${fv(L.colllayers,pkg?.colllayers)}</td>
+    </tr>`:''}`;
   return `<div class="riai-doc"><table>
     <tr>
       <td style="width:90px"><div style="font-size:18px;font-weight:900;color:#c8102e">CNH</div><div style="font-size:8px">Industrial</div></td>
@@ -1355,6 +1464,9 @@ function renderRIAI(d){
       <td colspan="6">${fv(L.proyecto||'Proyecto',d.proyecto)}</td>
     </tr>
     ${d.same?pkgRow(d.pkg,L.unico):pkgRow(d.p1,L.prim)+pkgRow(d.p2,L.sec)}
+    ${(d.su&&(d.su.static||d.su.dynamic))?`
+    <tr><td colspan="10" class="riai-subsec">${L.su}</td></tr>
+    <tr><td colspan="5">${fv(L.static,d.su.static)}</td><td colspan="5">${fv(L.dynamic,d.su.dynamic)}</td></tr>`:''}
     <tr><td colspan="10" class="riai-sec">${L.acc}</td></tr>
     <tr><td colspan="10" style="padding:8px;font-size:11px">${d.accesorios||'—'}</td></tr>
     <tr><td colspan="10" class="riai-sec">${L.imgs}</td></tr>
@@ -1478,9 +1590,6 @@ function swapCtrlImgs(keyA,keyB){
   imgA.src=srcB; imgA.style.display=dispB; rmA.classList.toggle('visible',visB);
   imgB.src=srcA; imgB.style.display=dispA; rmB.classList.toggle('visible',visA);
 
-  // los <input type=file> no se pueden "intercambiar" (por seguridad del navegador),
-  // pero el guardado usa el .src del <img> (base64), así que no hace falta -- se
-  // limpian nomás para que no confundan si se vuelve a tocar el file picker
   document.getElementById(`up-ctrl-${keyA}`).value='';
   document.getElementById(`up-ctrl-${keyB}`).value='';
   toast('Fotos movidas — no te olvides de Guardar');
@@ -1564,7 +1673,6 @@ async function saveControl(){
       toast(id?'Registro actualizado':'Registro guardado');
       toggleCtrlForm(false);
       loadControl();
-      // Análisis automático en segundo plano, después de guardar
       if(imgAbierta && savedId) analizarEnSegundoPlano(savedId, imgAbierta, {...d, id:savedId});
     }else toast('Error al guardar.',false);
   }catch(e){toast('Error de conexión.',false);}
