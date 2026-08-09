@@ -139,10 +139,31 @@ def get_riai(id):
     conn.close()
     return jsonify(dict(row)) if row else ("Not found", 404)
 
+
+# Campos nuevos de la Packaging Card. Se completan con None si el frontend
+# todavía no los manda (por ejemplo, mientras se termina de conectar el
+# formulario nuevo), para que el INSERT/UPDATE no rompa por faltar una key.
+CAMPOS_PACKAGING_CARD_NUEVOS = [
+    "p1_ispm", "p1_property", "p1_code", "p1_other",
+    "p2_ispm", "p2_property", "p2_code", "p2_other",
+    "p2_collapsible", "p2_collapsed_height", "p2_collapsed_layers",
+    "ps_tipo", "ps_retornable", "ps_material", "ps_ispm", "ps_property",
+    "ps_code", "ps_other", "ps_descripcion",
+    "ps_largo", "ps_ancho", "ps_alto", "ps_peso_emb", "ps_capacidad", "ps_peso_bruto",
+    "ps_collapsible", "ps_collapsed_height", "ps_collapsed_layers",
+    "su_static", "su_dynamic",
+]
+
+def _completar_defaults_riai(d):
+    for campo in CAMPOS_PACKAGING_CARD_NUEVOS:
+        d.setdefault(campo, None)
+    return d
+
+
 @app.route("/api/riai", methods=["POST"])
 @require_role("admin", "operador")
 def create_riai():
-    d = request.json
+    d = _completar_defaults_riai(request.json)
     conn = get_conn()
     cur = conn.execute("""
         INSERT INTO riai (
@@ -153,9 +174,16 @@ def create_riai():
             emb_identico, colocacion,
             p1_tipo, p1_retornable, p1_material, p1_descripcion,
             p1_largo, p1_ancho, p1_alto, p1_peso_emb, p1_capacidad, p1_peso_bruto,
-            p1_cajas_capa, p1_capas,
+            p1_cajas_capa, p1_capas, p1_ispm, p1_property, p1_code, p1_other,
             p2_tipo, p2_retornable, p2_material, p2_descripcion,
             p2_largo, p2_ancho, p2_alto, p2_peso_emb, p2_capacidad, p2_peso_bruto,
+            p2_ispm, p2_property, p2_code, p2_other,
+            p2_collapsible, p2_collapsed_height, p2_collapsed_layers,
+            ps_tipo, ps_retornable, ps_material, ps_descripcion,
+            ps_largo, ps_ancho, ps_alto, ps_peso_emb, ps_capacidad, ps_peso_bruto,
+            ps_ispm, ps_property, ps_code, ps_other,
+            ps_collapsible, ps_collapsed_height, ps_collapsed_layers,
+            su_static, su_dynamic,
             accesorios, img_caja, img_abierta, img_embalada, img_paletizado,
             ap_elaborado_nombre, ap_elaborado_fecha,
             ap_revisado_nombre, ap_revisado_fecha,
@@ -169,9 +197,16 @@ def create_riai():
             :emb_identico, :colocacion,
             :p1_tipo, :p1_retornable, :p1_material, :p1_descripcion,
             :p1_largo, :p1_ancho, :p1_alto, :p1_peso_emb, :p1_capacidad, :p1_peso_bruto,
-            :p1_cajas_capa, :p1_capas,
+            :p1_cajas_capa, :p1_capas, :p1_ispm, :p1_property, :p1_code, :p1_other,
             :p2_tipo, :p2_retornable, :p2_material, :p2_descripcion,
             :p2_largo, :p2_ancho, :p2_alto, :p2_peso_emb, :p2_capacidad, :p2_peso_bruto,
+            :p2_ispm, :p2_property, :p2_code, :p2_other,
+            :p2_collapsible, :p2_collapsed_height, :p2_collapsed_layers,
+            :ps_tipo, :ps_retornable, :ps_material, :ps_descripcion,
+            :ps_largo, :ps_ancho, :ps_alto, :ps_peso_emb, :ps_capacidad, :ps_peso_bruto,
+            :ps_ispm, :ps_property, :ps_code, :ps_other,
+            :ps_collapsible, :ps_collapsed_height, :ps_collapsed_layers,
+            :su_static, :su_dynamic,
             :accesorios, :img_caja, :img_abierta, :img_embalada, :img_paletizado,
             :ap_elaborado_nombre, :ap_elaborado_fecha,
             :ap_revisado_nombre, :ap_revisado_fecha,
@@ -187,7 +222,7 @@ def create_riai():
 @app.route("/api/riai/<int:id>", methods=["PUT"])
 @require_role("admin", "operador")
 def update_riai(id):
-    d = request.json
+    d = _completar_defaults_riai(request.json)
     d["id"] = id
     conn = get_conn()
     conn.execute("""
@@ -204,10 +239,22 @@ def update_riai(id):
             p1_largo=:p1_largo, p1_ancho=:p1_ancho, p1_alto=:p1_alto,
             p1_peso_emb=:p1_peso_emb, p1_capacidad=:p1_capacidad, p1_peso_bruto=:p1_peso_bruto,
             p1_cajas_capa=:p1_cajas_capa, p1_capas=:p1_capas,
+            p1_ispm=:p1_ispm, p1_property=:p1_property, p1_code=:p1_code, p1_other=:p1_other,
             p2_tipo=:p2_tipo, p2_retornable=:p2_retornable, p2_material=:p2_material,
             p2_descripcion=:p2_descripcion,
             p2_largo=:p2_largo, p2_ancho=:p2_ancho, p2_alto=:p2_alto,
             p2_peso_emb=:p2_peso_emb, p2_capacidad=:p2_capacidad, p2_peso_bruto=:p2_peso_bruto,
+            p2_ispm=:p2_ispm, p2_property=:p2_property, p2_code=:p2_code, p2_other=:p2_other,
+            p2_collapsible=:p2_collapsible, p2_collapsed_height=:p2_collapsed_height,
+            p2_collapsed_layers=:p2_collapsed_layers,
+            ps_tipo=:ps_tipo, ps_retornable=:ps_retornable, ps_material=:ps_material,
+            ps_descripcion=:ps_descripcion,
+            ps_largo=:ps_largo, ps_ancho=:ps_ancho, ps_alto=:ps_alto,
+            ps_peso_emb=:ps_peso_emb, ps_capacidad=:ps_capacidad, ps_peso_bruto=:ps_peso_bruto,
+            ps_ispm=:ps_ispm, ps_property=:ps_property, ps_code=:ps_code, ps_other=:ps_other,
+            ps_collapsible=:ps_collapsible, ps_collapsed_height=:ps_collapsed_height,
+            ps_collapsed_layers=:ps_collapsed_layers,
+            su_static=:su_static, su_dynamic=:su_dynamic,
             accesorios=:accesorios, img_caja=:img_caja, img_abierta=:img_abierta,
             img_embalada=:img_embalada, img_paletizado=:img_paletizado,
             ap_elaborado_nombre=:ap_elaborado_nombre, ap_elaborado_fecha=:ap_elaborado_fecha,
