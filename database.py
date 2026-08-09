@@ -165,4 +165,46 @@ def init_db():
     add_column_if_missing("riai", "p1_capas", "INTEGER")
     add_column_if_missing("riai", "p2_material", "TEXT")
 
+    # --- Migraciones nuevas: campos de la Packaging Card (ISPM-15, Property,
+    # Other, Collapsability, y el bloque THU "único" para el caso Identical=YES) ---
+
+    # Parts Package (embalaje primario) — campos nuevos
+    add_column_if_missing("riai", "p1_ispm", "TEXT")
+    add_column_if_missing("riai", "p1_property", "TEXT")
+    add_column_if_missing("riai", "p1_code", "TEXT")           # *CNH code
+    add_column_if_missing("riai", "p1_other", "TEXT")
+
+    # THU (embalaje secundario, caso "diferente") — campos nuevos
+    add_column_if_missing("riai", "p2_ispm", "TEXT")
+    add_column_if_missing("riai", "p2_property", "TEXT")
+    add_column_if_missing("riai", "p2_code", "TEXT")           # Pallet code o CNH code, según "colocacion"
+    add_column_if_missing("riai", "p2_other", "TEXT")
+    add_column_if_missing("riai", "p2_collapsible", "TEXT")
+    add_column_if_missing("riai", "p2_collapsed_height", "REAL")
+    add_column_if_missing("riai", "p2_collapsed_layers", "INTEGER")
+
+    # THU único (caso "idéntico") — prefijo ps_, no existía nada de esto todavía
+    add_column_if_missing("riai", "ps_tipo", "TEXT")
+    add_column_if_missing("riai", "ps_retornable", "TEXT")
+    add_column_if_missing("riai", "ps_material", "TEXT")
+    add_column_if_missing("riai", "ps_ispm", "TEXT")
+    add_column_if_missing("riai", "ps_property", "TEXT")
+    add_column_if_missing("riai", "ps_code", "TEXT")
+    add_column_if_missing("riai", "ps_other", "TEXT")
+    add_column_if_missing("riai", "ps_descripcion", "TEXT")
+    add_column_if_missing("riai", "ps_largo", "REAL")
+    add_column_if_missing("riai", "ps_ancho", "REAL")
+    add_column_if_missing("riai", "ps_alto", "REAL")
+    add_column_if_missing("riai", "ps_peso_emb", "REAL")
+    add_column_if_missing("riai", "ps_capacidad", "INTEGER")
+    add_column_if_missing("riai", "ps_peso_bruto", "REAL")
+    add_column_if_missing("riai", "ps_collapsible", "TEXT")
+    add_column_if_missing("riai", "ps_collapsed_height", "REAL")
+    add_column_if_missing("riai", "ps_collapsed_layers", "INTEGER")
+
+    # Shipping Unit Summary — stackability (compartido entre el caso "diferente"
+    # e "idéntico", ya que nunca están activos los dos a la vez)
+    add_column_if_missing("riai", "su_static", "INTEGER")
+    add_column_if_missing("riai", "su_dynamic", "INTEGER")
+
     conn.close()
