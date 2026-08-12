@@ -59,7 +59,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .btn-group{display:flex;gap:8px;flex-wrap:wrap}
 .data-table{width:100%;border-collapse:collapse;font-size:13px}
 .data-table th{background:var(--rojo);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
-.data-table td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.data-table td{padding:10px 12px;border-bottom:1px solid #f5f5f7;vertical-align:middle}
 .data-table tr:hover td{background:#fef5f6}
 .data-table .actions{display:flex;gap:6px;flex-wrap:wrap}
 .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
@@ -125,7 +125,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
 .dash-ctrl-filters input,.dash-ctrl-filters select{padding:7px 10px;border:1px solid var(--borde);border-radius:6px;font-size:13px}
 .dash-ctrl-scroll{max-height:420px;overflow-y:auto;border:1px solid var(--borde);border-radius:8px}
 .dash-ctrl-scroll table{margin:0}
-.dash-ctrl-scroll thead th{position:sticky;top:0;background:#fff;z-index:1}
+.dash-ctrl-scroll thead th{position:sticky;top:0;background:var(--rojo);color:#fff;z-index:1}
 .ranking-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
 .ranking-row:last-child{border-bottom:none}
 .ranking-badge{background:var(--gris);border-radius:10px;padding:2px 9px;font-weight:700;font-size:12px}
@@ -981,11 +981,51 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
   </tr>
 
   <tr>
-    <td class="accessories-cell" colspan="12" style="height:90px;">
-      <textarea id="f-accesorios" style="width:100%;height:100%;border:none;background:transparent;font-family:inherit;font-size:12px;padding:6px;resize:none;" placeholder="Descripción de protecciones, film stretch, esquineros, bolsas de sílica gel, etc."></textarea>
+    <td class="accessories-cell" colspan="5" style="height:170px;">
+      <div class="acc-grid">
+        <label><input type="checkbox" class="acc-chk" data-label="Cushioning (Pluriball, Foam, Paper)" onchange="syncAccesorios()"> Cushioning (Pluriball, Foam, Paper.....)</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Sun Radiation Protection" onchange="syncAccesorios()"> Sun Radiation Protection</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Plastic thermoformed cribs" onchange="syncAccesorios()"> Plastic thermoformed cribs</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Closure caps" onchange="syncAccesorios()"> Closure caps</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Polyethylene film" onchange="syncAccesorios()"> Polyethylene film</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Dehydrating bags" onchange="syncAccesorios()"> Dehydrating bags: <span class="qty-inline"><input type="number" id="acc-qty-dehyd" class="qty-box" style="text-align:center;font-size:10px;" oninput="syncAccesorios()"> bags</span></label>
+        <label><input type="checkbox" class="acc-chk" data-label="Styrofoam packaging" onchange="syncAccesorios()"> Styrofoam packaging</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Wrapped in sets" onchange="syncAccesorios()"> Wrapped in sets of <span class="qty-inline"><input type="number" id="acc-qty-wrapped" class="qty-box" style="text-align:center;font-size:10px;" oninput="syncAccesorios()"> pcs</span></label>
+        <label><input type="checkbox" class="acc-chk" data-label="Hive Wrap" onchange="syncAccesorios()"> Hive Wrap</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Tied in a bundle" onchange="syncAccesorios()"> Tied in a bundle of <span class="qty-inline"><input type="number" id="acc-qty-bundle" class="qty-box" style="text-align:center;font-size:10px;" oninput="syncAccesorios()"> pcs</span></label>
+        <label><input type="checkbox" class="acc-chk" data-label="VCI slab / paper" onchange="syncAccesorios()"> VCI slab / paper</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Individual plastic bags" onchange="syncAccesorios()"> Individual plastic bags</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Oil, Wax, Grease, Etc" onchange="syncAccesorios()"> Oil, Wax, Grease, Etc</label>
+        <label></label>
+        <label><input type="checkbox" class="acc-chk" data-label="Corrosion And Rust Protection" onchange="syncAccesorios()"> Corrosion And Rust Protection</label>
+        <label>Other: <input type="text" id="acc-other" style="width:70%;border:none;border-bottom:1px solid #ccc;font-size:10px;" oninput="syncAccesorios()"></label>
+        <label><input type="checkbox" class="acc-chk" data-label="Shock resistant material" onchange="syncAccesorios()"> Shock resistant material</label>
+        <label></label>
+      </div>
+    </td>
+    <td class="accessories-cell" colspan="4">
+      <div class="inner-layers">
+        <div class="il-labels">
+          <span>CODE:</span>
+          <span>TYPE:</span>
+          <span>QTY:</span>
+          <span>PROPERTY:</span>
+          <span>RETURNABLE?</span>
+        </div>
+        <div class="il-box"></div>
+      </div>
+    </td>
+    <td class="accessories-cell" colspan="3">
+      <div class="closure-list">
+        <label><input type="checkbox" class="acc-chk" data-label="Plastic film/Stretch film" onchange="syncAccesorios()"> Plastic film/Stretch film</label>
+        <label><input type="checkbox" class="acc-chk" data-label="Straps" onchange="syncAccesorios()"> Straps</label>
+      </div>
     </td>
   </tr>
-
+  <tr>
+    <td colspan="12" style="display:none;">
+      <textarea id="f-accesorios"></textarea>
+    </td>
   </tr>
 
   <!-- PARTS IDENTIFICATION ON PACKAGING -->
@@ -1674,6 +1714,36 @@ function previewPhoto(input, imgId, phId) {
 }
 
 // ── PESO BRUTO ────────────────────────────────────────────────────────────
+// ── PACKAGING ACCESSORIES (checkboxes -> texto guardado en f-accesorios) ──
+function syncAccesorios(){
+  const partes=[];
+  document.querySelectorAll('.acc-chk').forEach(chk=>{
+    if(!chk.checked) return;
+    let txt=chk.dataset.label;
+    if(txt==='Dehydrating bags'){
+      const q=document.getElementById('acc-qty-dehyd')?.value;
+      if(q) txt+=` (${q} bags)`;
+    }else if(txt==='Wrapped in sets'){
+      const q=document.getElementById('acc-qty-wrapped')?.value;
+      if(q) txt+=` (${q} pcs)`;
+    }else if(txt==='Tied in a bundle'){
+      const q=document.getElementById('acc-qty-bundle')?.value;
+      if(q) txt+=` (${q} pcs)`;
+    }
+    partes.push(txt);
+  });
+  const other=document.getElementById('acc-other')?.value?.trim();
+  if(other) partes.push(`Other: ${other}`);
+  document.getElementById('f-accesorios').value=partes.join('; ');
+}
+function restoreAccesorios(texto){
+  if(!texto) return;
+  document.querySelectorAll('.acc-chk').forEach(chk=>{
+    if(texto.includes(chk.dataset.label)) chk.checked=true;
+  });
+}
+
+
 function recalcAll(){
   // En la Packaging Card, el unico "peso bruto" con AUTO-calculo visible es
   // el de Parts Package (p1). El THU (p2/ps) no tiene ese campo en este diseño.
@@ -1872,6 +1942,7 @@ async function editRIAI(id){
     document.getElementById('f-same-dynamic').value=s(d.su_dynamic);
 
     document.getElementById('f-accesorios').value=s(d.accesorios);
+    restoreAccesorios(s(d.accesorios));
     document.getElementById('ap-elab-nombre').value=s(d.ap_elaborado_nombre);
     document.getElementById('ap-elab-fecha').value=s(d.ap_elaborado_fecha);
     document.getElementById('ap-rev-nombre').value=s(d.ap_revisado_nombre);
@@ -2335,10 +2406,11 @@ function toast(msg,ok=true){
 function clearForm(){
   document.getElementById('f-id').value='';
   document.getElementById('form-title').textContent='Nuevo RIAI';
-  document.querySelectorAll('#page-create input:not([type=radio]):not([type=file]),#page-create select,#page-create textarea')
+  document.querySelectorAll('#page-create input:not([type=radio]):not([type=file]):not([type=checkbox]),#page-create select,#page-create textarea')
     .forEach(el=>{if(!el.readOnly&&!el.disabled) el.value='';});
-  document.querySelectorAll('#page-create input[type=radio]')[0].checked=true;
-  document.querySelector('input[name="colocacion"][value="pallet"]').checked=true;
+  document.querySelectorAll('#page-create input[type=checkbox]').forEach(chk=>chk.checked=false);
+  document.getElementById('same-pkg').value='';
+  document.getElementById('colocacion').value='pallet';
   onSamePkgChange();onColocacionChange();
   ['caja','abierta','embalada'].forEach(k=>{
     const img=document.getElementById(`prev-${k}`);if(img){img.src='';img.style.display='none';}
