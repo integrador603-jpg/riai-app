@@ -33,6 +33,16 @@ def init_db():
         descripcion     TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS pn_proveedores (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        numero_pieza    TEXT NOT NULL,
+        proveedor_codigo TEXT,
+        proveedor_nombre TEXT NOT NULL,
+        UNIQUE(numero_pieza, proveedor_nombre)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_pn_proveedores_pn ON pn_proveedores(numero_pieza);
+
     CREATE TABLE IF NOT EXISTS control (
         id              INTEGER PRIMARY KEY AUTOINCREMENT,
         fecha           TEXT DEFAULT (date('now','localtime')),
