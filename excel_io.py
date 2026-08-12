@@ -177,3 +177,133 @@ def import_proveedores_excel(file_stream):
     conn.commit()
     conn.close()
     return inserted, errors
+
+
+# ── PN <-> PROVEEDORES ───────────────────────────────────────────────────
+def import_pn_proveedores_excel(file_stream):
+    """
+    Espera un Excel con columnas de encabezado: PN | Proveedor | Código Proveedor (opcional)
+    Un mismo PN puede repetirse en varias filas si tiene mas de un proveedor posible.
+    """
+    wb = load_workbook(file_stream, data_only=True)
+    ws = wb.active
+
+    headers = [str(c.value).strip() if c.value else "" for c in ws[1]]
+    def idx_de(*nombres):
+        for n in nombres:
+            if n in headers:
+                return headers.index(n)
+        return None
+
+    idx_pn = idx_de("PN", "N° Pieza", "Numero Pieza", "Número Pieza")
+    idx_prov = idx_de("Proveedor", "Nombre Proveedor", "Proveedor Nombre")
+    idx_cod = idx_de("Código Proveedor", "Codigo Proveedor", "Código", "Codigo")
+
+    if idx_pn is None or idx_prov is None:
+        return 0, ["El Excel debe tener columnas 'PN' y 'Proveedor' en la primera fila"]
+
+    conn = get_conn()
+    inserted = 0
+    errors = []
+
+    for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        if not row or all(v is None for v in row):
+            continue
+        try:
+            pn = str(row[idx_pn]).strip() if idx_pn < len(row) and row[idx_pn] is not None else None
+            prov = str(row[idx_prov]).strip() if idx_prov < len(row) and row[idx_prov] is not None else None
+            cod = None
+            if idx_cod is not None and idx_cod < len(row) and row[idx_cod] is not None:
+                cod = str(row[idx_cod]).strip()
+            if not pn or not prov:
+                errors.append(f"Fila {row_idx}: falta PN o Proveedor")
+                continue
+            conn.execute("""
+                INSERT INTO pn_proveedores (numero_pieza, proveedor_codigo, proveedor_nombre)
+                VALUES (?,?,?)
+                ON CONFLICT(numero_pieza, proveedor_nombre) DO UPDATE SET
+                    proveedor_codigo=excluded.proveedor_codigo
+            """, (pn, cod, prov))
+            inserted += 1
+        except Exception as e:
+            errors.append(f"Fila {row_idx}: {str(e)}")
+
+    conn.commit()
+    conn.close()
+    return inserted, errors
+
+
+def export_pn_proveedores_excel():
+    conn = get_conn()
+    rows = conn.execute("SELECT * FROM pn_proveedores ORDER BY numero_pieza").fetchall()
+    conn.close()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "PN-Proveedores"
+    headers = ["PN", "Proveedor", "Código Proveedor"]
+    ws.append(headers)
+    header_fill = PatternFill(start_color="C8102E", end_color="C8102E", fill_type="solid")
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = Font(color="FFFFFF", bold=True)
+
+    for r in rows:
+        ws.append([r["numero_pieza"], r["proveedor_nombre"], r["proveedor_codigo"]])
+
+    for col in ws.columns:
+        max_len = max((len(str(c.value)) for c in col if c.value is not None), default=10)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 40)
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
+
+
+# ── CONTROL (exportar) ───────────────────────────────────────────────────
+CONTROL_COLUMNS = [
+    ("fecha", "Fecha"),
+    ("numero_pieza", "N° Pieza"),
+    ("proveedor_nombre", "Proveedor"),
+    ("proveedor_codigo", "Código Proveedor"),
+    ("largo", "Largo (mm)"),
+    ("ancho", "Ancho (mm)"),
+    ("alto", "Alto (mm)"),
+    ("qty_por_caja", "Qty/Caja"),
+    ("saturacion", "Saturación (%)"),
+    ("notas", "Notas"),
+    ("creado_en", "Creado en"),
+]
+
+def export_control_excel():
+    conn = get_conn()
+    rows = conn.execute("SELECT * FROM control ORDER BY id DESC").fetchall()
+    conn.close()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Control de Embalaje"
+
+    header_fill = PatternFill(start_color="C8102E", end_color="C8102E", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True, size=10)
+    ws.append(["ID"] + [label for _, label in CONTROL_COLUMNS])
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+
+    for r in rows:
+        row_data = [r["id"]] + [r[key] if r[key] is not None else "" for key, _ in CONTROL_COLUMNS]
+        ws.append(row_data)
+
+    for col in ws.columns:
+        max_len = max((len(str(c.value)) for c in col if c.value is not None), default=10)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 35)
+
+    ws.freeze_panes = "A2"
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
