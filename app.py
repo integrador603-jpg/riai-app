@@ -2,7 +2,10 @@ from flask import Flask, jsonify, request, send_from_directory, session, send_fi
 from flask_cors import CORS
 from database import get_conn, init_db
 from auth import verify_user, create_user, init_default_admin, login_required, require_role
-from excel_io import export_riai_excel, export_proveedores_excel, import_riai_excel, import_proveedores_excel
+from excel_io import (
+    export_riai_excel, export_proveedores_excel, import_riai_excel, import_proveedores_excel,
+    export_control_excel, import_pn_proveedores_excel, export_pn_proveedores_excel,
+)
 from pdf_generator import generate_riai_pdf
 import os
 
@@ -110,8 +113,22 @@ def get_proveedores():
 def get_pieza(numero):
     conn = get_conn()
     row = conn.execute("SELECT * FROM piezas WHERE numero_pieza=?", (numero,)).fetchone()
+    resultado = dict(row) if row else {}
+
+    proveedores = conn.execute(
+        "SELECT proveedor_codigo, proveedor_nombre FROM pn_proveedores WHERE numero_pieza=? ORDER BY proveedor_nombre",
+        (numero,)
+    ).fetchall()
+    resultado["proveedores"] = [dict(p) for p in proveedores]
+
+    ultimo = conn.execute(
+        "SELECT fecha, proveedor_nombre, qty_por_caja, saturacion FROM control WHERE numero_pieza=? ORDER BY fecha DESC, id DESC LIMIT 1",
+        (numero,)
+    ).fetchone()
+    resultado["ultimo_control"] = dict(ultimo) if ultimo else None
+
     conn.close()
-    return jsonify(dict(row)) if row else jsonify({}), 200
+    return jsonify(resultado), 200
 
 # ── RIAI ──────────────────────────────────────────────────────────────────
 @app.route("/api/riai")
@@ -473,6 +490,20 @@ def export_proveedores():
     return send_file(buf, as_attachment=True, download_name="Proveedores_export.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+@app.route("/api/export/control")
+@login_required
+def export_control():
+    buf = export_control_excel()
+    return send_file(buf, as_attachment=True, download_name="Control_export.xlsx",
+                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+@app.route("/api/export/pn_proveedores")
+@login_required
+def export_pn_proveedores():
+    buf = export_pn_proveedores_excel()
+    return send_file(buf, as_attachment=True, download_name="PN_Proveedores_export.xlsx",
+                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
 @app.route("/api/import/riai", methods=["POST"])
 @require_role("admin", "operador")
 def import_riai():
@@ -489,6 +520,15 @@ def import_proveedores():
         return jsonify({"error": "No se envió ningún archivo"}), 400
     file = request.files["file"]
     inserted, errors = import_proveedores_excel(file.stream)
+    return jsonify({"status": "ok", "inserted": inserted, "errors": errors})
+
+@app.route("/api/import/pn_proveedores", methods=["POST"])
+@require_role("admin", "operador")
+def import_pn_proveedores():
+    if "file" not in request.files:
+        return jsonify({"error": "No se envió ningún archivo"}), 400
+    file = request.files["file"]
+    inserted, errors = import_pn_proveedores_excel(file.stream)
     return jsonify({"status": "ok", "inserted": inserted, "errors": errors})
 
 # ── RUN ───────────────────────────────────────────────────────────────────
