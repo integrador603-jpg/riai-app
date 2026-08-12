@@ -1178,6 +1178,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
       <div class="fld"><label>PN</label>
         <input type="text" id="ctrl-pn" oninput="onCtrlPNChange()">
         <div class="auto-tag" id="ctrl-pn-desc"></div>
+        <div class="auto-tag" id="ctrl-pn-ultimo" style="color:var(--azul);font-weight:600;"></div>
       </div>
       <div class="fld"><label>Proveedor</label>
         <div class="ac-wrap">
@@ -1265,6 +1266,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     <div class="btn-group">
       <button class="btn btn-outline" onclick="window.location.href=API+'/export/riai'">Exportar RIAIs (Excel)</button>
       <button class="btn btn-outline" onclick="window.location.href=API+'/export/proveedores'">Exportar Proveedores (Excel)</button>
+      <button class="btn btn-outline" onclick="window.location.href=API+'/export/control'">Exportar Control de Embalaje (Excel)</button>
+      <button class="btn btn-outline" onclick="window.location.href=API+'/export/pn_proveedores'">Exportar PN ↔ Proveedores (Excel)</button>
     </div>
   </div>
   <div class="card">
@@ -1273,9 +1276,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:va
     <div class="btn-group">
       <button class="btn btn-primary" onclick="document.getElementById('import-riai-file').click()">Importar RIAIs (Excel)</button>
       <button class="btn btn-primary" onclick="document.getElementById('import-prov-file').click()">Importar Proveedores (Excel)</button>
+      <button class="btn btn-primary" onclick="document.getElementById('import-pnprov-file').click()">Importar PN ↔ Proveedores (Excel)</button>
     </div>
+    <p style="font-size:12px;color:var(--texto-suave);margin-top:10px">El Excel de PN ↔ Proveedores necesita columnas <strong>PN</strong> y <strong>Proveedor</strong> (y opcionalmente <strong>Código Proveedor</strong>) en la primera fila. Un mismo PN puede repetirse en varias filas si tiene más de un proveedor posible.</p>
     <input type="file" id="import-riai-file" accept=".xlsx" style="display:none" onchange="importExcel(this,'riai')">
     <input type="file" id="import-prov-file" accept=".xlsx" style="display:none" onchange="importExcel(this,'proveedores')">
+    <input type="file" id="import-pnprov-file" accept=".xlsx" style="display:none" onchange="importExcel(this,'pn_proveedores')">
   </div>
 </div>
 
@@ -2084,6 +2090,7 @@ function clearCtrlForm(){
   document.getElementById('ctrl-fecha').value=new Date().toISOString().split('T')[0];
   ['ctrl-pn','ctrl-supplier-name','ctrl-largo','ctrl-ancho','ctrl-alto','ctrl-qty','ctrl-notas'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ctrl-pn-desc').textContent='';
+  document.getElementById('ctrl-pn-ultimo').textContent='';
   setSatUI(null);
   ['cerrada','abierta','etiqueta'].forEach(k=>{
     const img=document.getElementById(`prev-ctrl-${k}`);if(img){img.src='';img.style.display='none';}
@@ -2107,14 +2114,44 @@ function selectCtrlSupplier(codigo){
   document.getElementById('ctrl-supplier-name').value=s.nombre;
   document.getElementById('ctrl-supplier-ac').style.display='none';
 }
+function selectCtrlSupplierByIndex(i){
+  const s=ctrlSuppCache[i];if(!s) return;
+  document.getElementById('ctrl-supplier-name').value=s.nombre;
+  document.getElementById('ctrl-supplier-ac').style.display='none';
+}
 
 let ctrlPNTimer;
 function onCtrlPNChange(){
   clearTimeout(ctrlPNTimer);
   ctrlPNTimer=setTimeout(async()=>{
-    const pn=document.getElementById('ctrl-pn').value.trim();if(!pn) return;
+    const pn=document.getElementById('ctrl-pn').value.trim();
+    const ultimoEl=document.getElementById('ctrl-pn-ultimo');
+    if(!pn){ultimoEl.textContent='';return;}
     const data=await fetch(`${API}/piezas/${encodeURIComponent(pn)}`,{credentials:'include'}).then(r=>r.json()).catch(()=>({}));
     document.getElementById('ctrl-pn-desc').textContent=data.descripcion||'';
+
+    // Última vez que se contó este PN
+    if(data.ultimo_control){
+      const u=data.ultimo_control;
+      const satTxt=(u.saturacion!==null&&u.saturacion!==undefined)?` — saturación ${u.saturacion}%`:'';
+      ultimoEl.textContent=`Última vez contado: ${u.fecha||'—'} (${u.proveedor_nombre||'proveedor no registrado'}${satTxt})`;
+    }else{
+      ultimoEl.textContent='Sin conteos previos para este PN';
+    }
+
+    // Proveedor(es) sugeridos para este PN
+    const provs=data.proveedores||[];
+    const suppInput=document.getElementById('ctrl-supplier-name');
+    if(provs.length===1 && !suppInput.value.trim()){
+      // un solo proveedor conocido y el campo esta vacio -> autocompletar directo
+      suppInput.value=provs[0].proveedor_nombre;
+    }else if(provs.length>1){
+      // varios proveedores posibles -> mostrarlos como opciones para elegir
+      ctrlSuppCache=provs.map(p=>({codigo:p.proveedor_codigo||'', nombre:p.proveedor_nombre}));
+      const ac=document.getElementById('ctrl-supplier-ac');
+      ac.innerHTML=provs.map((p,i)=>`<div onclick="selectCtrlSupplierByIndex(${i})">${p.proveedor_nombre} <small style="color:#aaa">${p.proveedor_codigo||'proveedor conocido para este PN'}</small></div>`).join('');
+      ac.style.display='block';
+    }
   },400);
 }
 
