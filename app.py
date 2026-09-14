@@ -504,6 +504,62 @@ def export_pn_proveedores():
     return send_file(buf, as_attachment=True, download_name="PN_Proveedores_export.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+# ── EXPORTACIÓN TEMPORAL DE FOTOS DE CONTROL (para reentrenar el modelo de
+# saturación) ───────────────────────────────────────────────────────────────
+# Requiere la variable de entorno EXPORT_FOTOS_SECRET configurada en Railway.
+# Sacar esta ruta del código una vez que ya bajaste las fotos que necesitás:
+# es una vía de exportación masiva de datos, no conviene dejarla colgada
+# permanentemente aunque esté protegida por token.
+@app.route("/api/admin/exportar-fotos-control")
+@require_role("admin")
+def exportar_fotos_control():
+    token = request.args.get("token", "")
+    secreto = os.environ.get("EXPORT_FOTOS_SECRET", "")
+    if not secreto or token != secreto:
+        return jsonify({"error": "Token inválido"}), 403
+
+    tipo = request.args.get("tipo", "abierta")
+    if tipo not in {"abierta", "cerrada", "etiqueta", "todas"}:
+        return jsonify({"error": "tipo inválido (usar abierta/cerrada/etiqueta/todas)"}), 400
+
+    import io, zipfile, base64
+
+    conn = get_conn()
+    rows = conn.execute(
+        "SELECT id, fecha, numero_pieza, proveedor_nombre, saturacion, "
+        "img_cerrada, img_abierta, img_etiqueta FROM control ORDER BY id"
+    ).fetchall()
+    conn.close()
+
+    tipos = ["cerrada", "abierta", "etiqueta"] if tipo == "todas" else [tipo]
+    manifest = ["id,fecha,numero_pieza,proveedor_nombre,saturacion_actual,tipo_foto,archivo"]
+    zip_buf = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for t in tipos:
+            campo = f"img_{t}"
+            for row in rows:
+                b64 = row[campo]
+                if not b64:
+                    continue
+                if "," in b64[:60]:
+                    b64 = b64.split(",", 1)[1]
+                try:
+                    data = base64.b64decode(b64)
+                except Exception:
+                    continue
+                pn = (row["numero_pieza"] or "sin_pn").replace("/", "-").replace(" ", "_")
+                nombre = f"{t}/control_{row['id']}_{pn}_{t}.jpg"
+                zf.writestr(nombre, data)
+                sat = row["saturacion"] if row["saturacion"] is not None else ""
+                prov = (row["proveedor_nombre"] or "").replace(",", " ")
+                manifest.append(f"{row['id']},{row['fecha']},{pn},{prov},{sat},{t},{nombre}")
+        zf.writestr("manifest.csv", "\n".join(manifest))
+
+    zip_buf.seek(0)
+    return send_file(zip_buf, as_attachment=True, download_name="fotos_control_export.zip",
+                      mimetype="application/zip")
+
 @app.route("/api/import/riai", methods=["POST"])
 @require_role("admin", "operador")
 def import_riai():
